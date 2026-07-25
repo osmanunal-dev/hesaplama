@@ -360,6 +360,16 @@
   .list-row .lr-in:focus{outline:none;border-color:var(--teal)}
   .add-row{background:var(--teal-wash);color:var(--teal-d);border:1px dashed var(--teal);border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;margin-top:2px}
   .add-row:hover{background:#d7e9e6}
+  .ed-sec-flex{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .cp-list{display:flex;flex-direction:column;gap:5px;max-height:46vh;overflow:auto;margin:0 -4px;padding:0 4px}
+  .cp-item{width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:11px 13px;cursor:pointer;transition:.14s;display:block}
+  .cp-item:hover{border-color:var(--teal);background:var(--teal-wash)}
+  .cp-item .t{font-weight:700;font-size:13.5px;color:var(--ink)}
+  .cp-item .m{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .cp-item .m .pill{display:inline-block;background:var(--paper);border:1px solid var(--line-2);border-radius:20px;padding:1px 8px;margin-right:5px;font-weight:600}
+  .cp-group{font-family:'Archivo';font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:12px 2px 5px}
+  .cp-group:first-child{margin-top:0}
+  .cp-empty{color:var(--muted);font-size:13px;padding:16px 4px;text-align:center}
 
   footer.foot{margin-top:auto;border-top:1px solid var(--line);background:var(--surface)}
   .foot-in{max-width:1320px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
@@ -675,8 +685,24 @@
     <div class="modal-b" id="editorBody"></div>
     <div class="modal-f">
       <button class="btn btn-danger" id="editorDelete" style="display:none;margin-right:auto" onclick="editorDeleteFn()">Sil</button>
+      <button class="btn btn-out" id="editorCopy" style="display:none" onclick="editorCopyFn()">Kopya Oluştur</button>
       <button class="btn btn-out" onclick="closeEditor()">Vazgeç</button>
       <button class="btn btn-teal" onclick="editorSaveFn()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- COPY SOURCE PICKER -->
+<div class="modal-bg" id="copyPicker" style="z-index:120">
+  <div class="modal modal-sm">
+    <div class="modal-h">
+      <h3>Başka İmalattan Kopyala</h3>
+      <button class="x" onclick="closeCopyPicker()">✕</button>
+    </div>
+    <div class="modal-b">
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:12px">Seçtiğiniz imalatın <b>malzeme analizi, işçilik ve ölçü ipucu</b> forma aktarılır (mevcut malzeme satırlarının yerine geçer). Menü etiketi, ad ve kategori değişmez.</p>
+      <input id="cpSearch" class="lg-input" placeholder="İmalat ara…" oninput="renderCopyList()" style="margin-bottom:12px">
+      <div id="cpList" class="cp-list"></div>
     </div>
   </div>
 </div>
@@ -1247,7 +1273,7 @@ function buildAdminLists(){
     groups[g].forEach(c=>{
       const it=document.createElement('div'); it.className='admin-item';
       it.innerHTML=`<div class="ai-main"><div class="ai-title">${esc(c.menuLabel)}</div><div class="ai-meta"><span class="pill">${c.mats.length} malzeme</span> ${esc(c.name)}</div></div>
-        <div class="ai-actions"><button class="btn btn-out btn-mini" onclick="editCalc('${c.id}')">Düzenle</button><button class="btn btn-danger btn-mini" onclick="delCalc('${c.id}')">Sil</button></div>`;
+        <div class="ai-actions"><button class="btn btn-out btn-mini" onclick="editCalc('${c.id}')">Düzenle</button><button class="btn btn-out btn-mini" onclick="dupCalc('${c.id}')">Kopyala</button><button class="btn btn-danger btn-mini" onclick="delCalc('${c.id}')">Sil</button></div>`;
       cl.appendChild(it);
     });
   });
@@ -1263,10 +1289,11 @@ function buildAdminLists(){
 }
 
 /* ============ ADMIN: EDİTÖR ============ */
-let _save=null,_del=null;
+let _save=null,_del=null,_copy=null,_editCalcId=null;
 function closeEditor(){ document.getElementById('editor').classList.remove('show'); }
 function editorSaveFn(){ if(_save)_save(); }
 function editorDeleteFn(){ if(_del)_del(); }
+function editorCopyFn(){ if(_copy)_copy(); }
 function slug(s){ return (s||'').toLowerCase().replace(/[çğıöşü]/g,m=>({'ç':'c','ğ':'g','ı':'i','ö':'o','ş':'s','ü':'u'}[m])).replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,24)||'yeni'; }
 function uniqueId(base,exists){ let id=base,n=2; while(exists(id)){ id=base+'_'+n; n++; } return id; }
 
@@ -1307,6 +1334,7 @@ function readList(hostId){ return [...document.querySelectorAll('#'+hostId+' .lr
 
 function editCalc(id){
   const isNew=!id; const c=isNew?{id:'',path:[],menuLabel:'',name:'',labor:100,dimHint:'',mats:[]}:calcById(id);
+  _editCalcId=id||null;
   document.getElementById('editorTitle').textContent=isNew?'Yeni İmalat':'İmalatı Düzenle';
   document.getElementById('editorDelete').style.display=isNew?'none':'';
   const tops=[...new Set(DB.calcs.map(x=>x.path&&x.path[0]).filter(Boolean))];
@@ -1324,23 +1352,74 @@ function editCalc(id){
       <div class="ed-field"><label>İşçilik (₺/m²)</label><input type="number" id="cf-labor" value="${c.labor}" step="1"></div>
       <div class="ed-field"><label>Ölçü İpucu (opsiyonel)</label><input type="text" id="cf-hint" value="${esc(c.dimHint||'')}" placeholder="Örn: En = Uzunluk, Boy = Yükseklik"></div>
     </div>
-    <div class="ed-sec">Malzeme Analizi</div>
+    <div class="ed-sec ed-sec-flex">Malzeme Analizi <button type="button" class="btn btn-out btn-mini" style="text-transform:none;letter-spacing:0;font-weight:600" onclick="openCopyPicker()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Başka İmalattan Kopyala</button></div>
     <div class="mat-head"><span>Malzeme</span><span>Not</span><span>Birim</span><span>Baz</span><span>Sarfiyat</span><span>Fiyat</span><span></span></div>
     <div id="matRows"></div>
     <button class="add-row" onclick="addMatRow()">+ Malzeme Ekle</button>`;
   const host=document.getElementById('matRows'); c.mats.forEach(m=>addMatRow(m)); if(!c.mats.length){addMatRow();addMatRow();}
-  _del = isNew?null:()=>delCalc(id,true);
-  _save = ()=>{
+  document.getElementById('editorCopy').style.display=isNew?'none':'';
+  const readForm=()=>{
     const menu=document.getElementById('cf-menu').value.trim(), name=document.getElementById('cf-name').value.trim();
-    if(!menu){ alert('Menü etiketi zorunlu.'); return; }
+    if(!menu){ alert('Menü etiketi zorunlu.'); return null; }
     const p0=document.getElementById('cf-p0').value.trim(), p1=document.getElementById('cf-p1').value.trim();
-    const path=[p0,p1].filter(Boolean);
-    const mats=readMats(); if(!mats.length){ alert('En az bir malzeme ekleyin.'); return; }
-    const obj={ id:isNew?uniqueId(slug(menu),x=>DB.calcs.some(c=>c.id===x)):id, path, menuLabel:menu, name:name||menu, labor:parseFloat(document.getElementById('cf-labor').value)||0, dimHint:document.getElementById('cf-hint').value.trim(), mats };
+    const mats=readMats(); if(!mats.length){ alert('En az bir malzeme ekleyin.'); return null; }
+    return { path:[p0,p1].filter(Boolean), menuLabel:menu, name:name||menu, labor:parseFloat(document.getElementById('cf-labor').value)||0, dimHint:document.getElementById('cf-hint').value.trim(), mats };
+  };
+  _del = isNew?null:()=>delCalc(id,true);
+  _copy = isNew?null:()=>{
+    const f=readForm(); if(!f)return;
+    const nid=uniqueId(slug(f.menuLabel+' kopya'),x=>DB.calcs.some(c=>c.id===x));
+    const obj=Object.assign({id:nid},f,{menuLabel:f.menuLabel+' (Kopya)',name:f.name+' (Kopya)'});
+    const idx=DB.calcs.findIndex(c=>c.id===id);
+    DB.calcs.splice(idx>=0?idx+1:DB.calcs.length,0,obj);
+    saveDB(); closeEditor(); rebuildAll(); editCalc(nid);
+  };
+  _save = ()=>{
+    const f=readForm(); if(!f)return;
+    const obj=Object.assign({id:isNew?uniqueId(slug(f.menuLabel),x=>DB.calcs.some(c=>c.id===x)):id},f);
     if(isNew) DB.calcs.push(obj); else { const idx=DB.calcs.findIndex(c=>c.id===id); DB.calcs[idx]=obj; }
     saveDB(); closeEditor(); rebuildAll();
   };
   document.getElementById('editor').classList.add('show');
+}
+function dupCalc(id){
+  const c=calcById(id); if(!c)return;
+  const copy=clone(c);
+  copy.id=uniqueId(slug(c.menuLabel+' kopya'),x=>DB.calcs.some(k=>k.id===x));
+  copy.menuLabel=c.menuLabel+' (Kopya)';
+  copy.name=c.name+' (Kopya)';
+  const idx=DB.calcs.findIndex(k=>k.id===id);
+  DB.calcs.splice(idx>=0?idx+1:DB.calcs.length,0,copy);
+  saveDB(); rebuildAll(); editCalc(copy.id);
+}
+/* -- Başka imalattan malzeme çekme (açılır pencere) -- */
+function openCopyPicker(){ document.getElementById('cpSearch').value=''; renderCopyList(); document.getElementById('copyPicker').classList.add('show'); setTimeout(()=>document.getElementById('cpSearch').focus(),50); }
+function closeCopyPicker(){ document.getElementById('copyPicker').classList.remove('show'); }
+function renderCopyList(){
+  const term=(document.getElementById('cpSearch').value||'').toLocaleLowerCase('tr');
+  const host=document.getElementById('cpList'); host.innerHTML='';
+  const list=DB.calcs.filter(c=>c.id!==_editCalcId).filter(c=> !term || (c.name+' '+c.menuLabel+' '+(c.path||[]).join(' ')).toLocaleLowerCase('tr').includes(term));
+  if(!list.length){ host.innerHTML='<div class="cp-empty">Eşleşen imalat yok.</div>'; return; }
+  const groups={}, order=[];
+  list.forEach(c=>{ const g=(c.path&&c.path.length?c.path.join(' › '):'Genel'); if(!groups[g]){groups[g]=[];order.push(g);} groups[g].push(c); });
+  order.forEach(g=>{
+    const h=document.createElement('div'); h.className='cp-group'; h.textContent=g; host.appendChild(h);
+    groups[g].forEach(c=>{
+      const b=document.createElement('button'); b.type='button'; b.className='cp-item';
+      b.innerHTML=`<div class="t">${esc(c.menuLabel)}</div><div class="m"><span class="pill">${c.mats.length} malzeme</span><span class="pill">İşçilik ₺${c.labor}</span>${esc(c.name)}</div>`;
+      b.onclick=()=>pickCopySource(c.id);
+      host.appendChild(b);
+    });
+  });
+}
+function pickCopySource(id){
+  const src=calcById(id); if(!src)return;
+  document.getElementById('cf-labor').value=src.labor;
+  document.getElementById('cf-hint').value=src.dimHint||'';
+  const host=document.getElementById('matRows'); host.innerHTML='';
+  src.mats.forEach(m=>addMatRow(clone(m)));
+  if(!src.mats.length) addMatRow();
+  closeCopyPicker();
 }
 function delCalc(id,fromEditor){
   const c=calcById(id); if(!c)return;
@@ -1358,6 +1437,7 @@ function editArticle(id){
   const isNew=!id; const a=isNew?{id:'',cat:'',calc:'',title:'',excerpt:'',lead:'',extra:'',intro:'',steps:[],tips:[],tools:[]}:DB.articles.find(x=>x.id===id);
   document.getElementById('editorTitle').textContent=isNew?'Yeni Makale':'Makaleyi Düzenle';
   document.getElementById('editorDelete').style.display=isNew?'none':'';
+  document.getElementById('editorCopy').style.display='none'; _copy=null;
   const cats=[...new Set(DB.articles.map(x=>x.cat).filter(Boolean))];
   const calcOpts=DB.calcs.map(c=>`<option value="${c.id}" ${c.id===a.calc?'selected':''}>${esc(c.name)}</option>`).join('');
   document.getElementById('editorBody').innerHTML=`
@@ -1428,10 +1508,7 @@ document.getElementById('yr').textContent=new Date().getFullYear();
 loadDB(); buildTree(); buildBlog();
 try{ if(sessionStorage.getItem('yapiAdmin')==='1') isAdmin=true; }catch(e){}
 updateLockUI();
-document.getElementById('settings').addEventListener('click',e=>{if(e.target.id==='settings')closeSettings();});
-document.getElementById('login').addEventListener('click',e=>{if(e.target.id==='login')closeLogin();});
-document.getElementById('editor').addEventListener('click',e=>{if(e.target.id==='editor')closeEditor();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSettings();closeLogin();closeEditor();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){ closeSettings(); closeLogin(); }});
 
 </script>
 </body>
