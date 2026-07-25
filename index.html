@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yapı Maliyet & Analiz Hesaplama</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16202b;
+    --ink-2:#33414f;
+    --muted:#6b7885;
+    --line:#d9d5c8;
+    --line-2:#e9e6dc;
+    --paper:#f5f3ec;
+    --surface:#ffffff;
+    --teal:#0d7d72;
+    --teal-d:#0a5f57;
+    --teal-wash:#e5f0ee;
+    --amber:#e8722a;
+    --amber-d:#c85a17;
+    --amber-wash:#fbeadd;
+    --shadow:0 1px 2px rgba(22,32,43,.06),0 8px 24px -12px rgba(22,32,43,.18);
+    --radius:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:26px 26px;
+    -webkit-font-smoothing:antialiased;
+    display:flex;flex-direction:column;min-height:100vh;
+  }
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  /* ---- top bar ---- */
+  header.top{
+    background:var(--ink);color:#fff;z-index:40;
+    border-bottom:3px solid var(--amber);
+  }
+  .top-in{max-width:1320px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{
+    width:40px;height:40px;border-radius:9px;flex:none;
+    background:linear-gradient(135deg,var(--teal),var(--teal-d));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);
+  }
+  .logo svg{width:24px;height:24px}
+  .brand h1{font-family:'Archivo',sans-serif;font-weight:800;font-size:18px;letter-spacing:-.01em;line-height:1.05}
+  .brand .sub{font-size:11px;color:#9fb0ba;letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+  .top-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .top-note{font-size:11px;color:#9fb0ba;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+  @media(max-width:560px){.top-note{display:none}}
+  .btn{
+    font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer;
+    border:1px solid transparent;border-radius:8px;padding:9px 14px;display:inline-flex;
+    align-items:center;gap:7px;transition:.15s;white-space:nowrap;
+  }
+  .btn svg{width:15px;height:15px}
+  .btn-ghost{background:rgba(255,255,255,.08);color:#e7ecef;border-color:rgba(255,255,255,.16)}
+  .btn-ghost:hover{background:rgba(255,255,255,.16)}
+  .btn-amber{background:var(--amber);color:#fff}
+  .btn-amber:hover{background:var(--amber-d)}
+  .btn-teal{background:var(--teal);color:#fff}
+  .btn-teal:hover{background:var(--teal-d)}
+  .btn-out{background:var(--surface);color:var(--ink);border-color:var(--line)}
+  .btn-out:hover{border-color:var(--teal);color:var(--teal-d)}
+
+  /* ---- tab bar ---- */
+  .tabbar{position:sticky;top:0;z-index:45;background:var(--surface);border-bottom:1px solid var(--line)}
+  .tabbar-in{max-width:1320px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:6px}
+  .tabs{display:flex;gap:2px}
+  .tab{
+    position:relative;background:none;border:none;cursor:pointer;
+    font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;color:var(--muted);
+    padding:15px 14px;display:flex;align-items:center;gap:8px;transition:.15s;
+    border-bottom:3px solid transparent;margin-bottom:-1px;
+  }
+  .tab svg{width:17px;height:17px}
+  .tab:hover{color:var(--ink-2)}
+  .tab.active{color:var(--teal-d);border-bottom-color:var(--teal)}
+  .tabbar-actions{margin-left:auto}
+  @media(max-width:560px){.tab{font-size:13px;padding:13px 10px}.tabbar-actions .btn{padding:8px 11px}}
+
+  /* ---- layout ---- */
+  .wrap{max-width:1320px;margin:0 auto;padding:22px 20px 60px;width:100%;display:grid;grid-template-columns:290px 1fr;gap:22px;align-items:start}
+  @media(max-width:960px){.wrap{grid-template-columns:1fr}}
+
+  /* ---- sidebar tree ---- */
+  aside{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden;position:sticky;top:64px;
+  }
+  @media(max-width:960px){aside{position:static}}
+  .aside-h{padding:14px 16px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:8px}
+  .aside-h svg{width:16px;height:16px;color:var(--teal)}
+  .aside-h span{font-family:'Archivo',sans-serif;font-weight:700;font-size:13px;letter-spacing:.02em;text-transform:uppercase;color:var(--ink-2)}
+  .tree{padding:6px 6px 10px;max-height:74vh;overflow:auto}
+  .node{margin:1px 0}
+  .row{
+    width:100%;text-align:left;background:none;border:none;cursor:pointer;
+    padding:8px 10px;border-radius:7px;display:flex;align-items:center;gap:8px;
+    font-family:'Inter';transition:.12s;color:var(--ink-2);
+  }
+  .row:hover{background:var(--paper);color:var(--ink)}
+  .chev{width:13px;height:13px;color:var(--muted);transition:transform .18s;flex:none}
+  .grp.open > .row .chev{transform:rotate(90deg)}
+  .kids{display:none;margin-left:15px;padding-left:2px;border-left:1.5px dashed var(--line)}
+  .grp.open > .kids{display:block}
+  .lf-dot{width:5px;height:5px;border-radius:50%;background:var(--line);flex:none;margin:0 4px}
+  .sq-dot{width:8px;height:8px;border-radius:2px;background:var(--teal);flex:none}
+  .lbl{flex:1;min-width:0}
+  /* derinliğe göre tipografi */
+  .grp-row.d0,.leaf-row.d0{font-weight:700;font-size:13.5px;color:var(--ink)}
+  .grp-row.d1{font-weight:600;font-size:13px;color:var(--ink-2)}
+  .leaf-row.d1,.leaf-row.d2{font-weight:500;font-size:12.75px;color:var(--ink-2)}
+  .leaf-row.active{background:var(--teal-wash)!important;color:var(--teal-d);font-weight:600}
+  .leaf-row.active .lf-dot{background:var(--teal)}
+
+  /* ---- main ---- */
+  main{min-width:0;display:flex;flex-direction:column;gap:18px}
+  .breadcrumb{font-size:12.5px;color:var(--muted);display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .breadcrumb b{color:var(--ink);font-weight:600}
+  .breadcrumb .sep{color:var(--line)}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card-h{padding:16px 20px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:12px}
+  .card-h .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);font-weight:700}
+  .card-h h2{font-family:'Archivo',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.01em}
+  .card-h .tag{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--amber-d);background:var(--amber-wash);padding:4px 10px;border-radius:20px}
+  .card-b{padding:20px}
+
+  /* input row */
+  .measure{display:grid;grid-template-columns:1fr 1fr auto 1fr;gap:14px;align-items:end}
+  @media(max-width:640px){.measure{grid-template-columns:1fr 1fr}.measure .or{display:none}}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px;letter-spacing:.02em}
+  .field label .u{color:var(--muted);font-weight:500}
+  .in{position:relative}
+  .in input{
+    width:100%;font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:700;color:var(--ink);
+    padding:12px 42px 12px 14px;border:1.5px solid var(--line);border-radius:9px;background:var(--paper);
+    transition:.15s;text-align:right;
+  }
+  .in input:focus{outline:none;border-color:var(--teal);background:#fff;box-shadow:0 0 0 3px var(--teal-wash)}
+  .in .unit{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none}
+  .or{display:flex;align-items:center;justify-content:center;height:47px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+  .calc-row{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
+  .hint{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .hint svg{width:14px;height:14px;color:var(--amber);flex:none}
+  .btn-lg{padding:13px 26px;font-size:14px}
+
+  /* results */
+  #result{display:none}
+  #result.show{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-2);border-bottom:1px solid var(--line-2)}
+  @media(max-width:640px){.summary{grid-template-columns:repeat(2,1fr)}}
+  .sm{background:var(--surface);padding:14px 16px}
+  .sm .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+  .sm .v{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:19px;margin-top:4px;color:var(--ink)}
+  .sm .v small{font-size:12px;color:var(--muted);font-weight:500}
+
+  table.boq{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.boq th{
+    text-align:left;font-family:'Archivo',sans-serif;font-weight:700;font-size:11px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--muted);padding:12px 14px;border-bottom:1.5px solid var(--line);background:var(--paper);
+    position:sticky;top:0;
+  }
+  table.boq th.r,table.boq td.r{text-align:right}
+  table.boq td{padding:11px 14px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+  table.boq tbody tr:hover{background:var(--paper)}
+  table.boq td.name{font-weight:600;color:var(--ink)}
+  table.boq td .sub{font-size:11.5px;color:var(--muted);font-weight:400;margin-top:1px}
+  table.boq td.qty{font-family:'JetBrains Mono';font-weight:700}
+  table.boq td.price,table.boq td.total{font-family:'JetBrains Mono';font-weight:600}
+  table.boq td.total{color:var(--teal-d);font-weight:700}
+  .price-edit{width:88px;font-family:'JetBrains Mono';font-weight:600;font-size:13px;text-align:right;border:1px solid var(--line);border-radius:6px;padding:5px 7px;background:#fff;color:var(--ink)}
+  .price-edit:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 2px var(--teal-wash)}
+
+  tfoot td{padding:10px 14px;font-size:13.5px}
+  tfoot .lbl{text-align:right;color:var(--ink-2);font-weight:600}
+  tfoot .val{text-align:right;font-family:'JetBrains Mono';font-weight:700}
+  tfoot tr.grand td{border-top:2px solid var(--ink);padding-top:14px;padding-bottom:14px}
+  tfoot tr.grand .lbl{font-family:'Archivo';font-size:14px;text-transform:uppercase;letter-spacing:.04em}
+  tfoot tr.grand .val{font-size:22px;color:var(--amber-d)}
+
+  .empty{padding:56px 24px;text-align:center;color:var(--muted)}
+  .empty svg{width:46px;height:46px;color:var(--line);margin-bottom:14px}
+  .empty h3{font-family:'Archivo';font-weight:700;color:var(--ink-2);font-size:16px;margin-bottom:6px}
+  .empty p{font-size:13.5px;max-width:340px;margin:0 auto;line-height:1.5}
+
+  /* options bar */
+  .opts{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 20px;border-top:1px solid var(--line-2);background:var(--paper)}
+  .switch{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer;user-select:none}
+  .switch input{display:none}
+  .track{width:38px;height:22px;border-radius:12px;background:var(--line);position:relative;transition:.18s;flex:none}
+  .track::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.18s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .switch input:checked + .track{background:var(--teal)}
+  .switch input:checked + .track::after{left:19px}
+
+  /* modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(22,32,43,.5);backdrop-filter:blur(2px);z-index:80;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--surface);border-radius:14px;max-width:720px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+  .modal-h{padding:18px 22px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:10px}
+  .modal-h h3{font-family:'Archivo';font-weight:800;font-size:17px}
+  .modal-h .x{margin-left:auto;background:var(--paper);border:1px solid var(--line);width:32px;height:32px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+  .modal-h .x:hover{color:var(--ink);border-color:var(--muted)}
+  .modal-b{padding:20px 22px;max-height:64vh;overflow:auto}
+  .set-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:22px}
+  @media(max-width:560px){.set-grid{grid-template-columns:1fr}}
+  .set-grid .field input,.set-grid .field select{width:100%;font-family:'JetBrains Mono';font-weight:600;font-size:14px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+  .set-grid .field input:focus{outline:none;border-color:var(--teal)}
+  .set-note{font-size:12.5px;color:var(--muted);line-height:1.55;background:var(--amber-wash);border:1px solid #f0d3bd;border-radius:8px;padding:11px 13px;margin-bottom:18px;display:flex;gap:9px}
+  .set-note svg{width:16px;height:16px;color:var(--amber-d);flex:none;margin-top:1px}
+  .modal-f{padding:14px 22px;border-top:1px solid var(--line-2);display:flex;gap:10px;justify-content:flex-end;background:var(--paper)}
+
+  /* çözüm rehberi */
+  @media(max-width:560px){.btn-label{display:none}.top-in{padding:10px 14px}}
+  .g-intro{font-size:13.5px;color:var(--ink-2);line-height:1.6;background:var(--teal-wash);border:1px solid #cfe4e0;border-radius:9px;padding:12px 14px;margin-bottom:6px}
+  .g-note{font-size:12.5px;color:var(--amber-d);background:var(--amber-wash);border:1px solid #f0d3bd;border-radius:8px;padding:9px 12px;margin:12px 0 4px}
+  .g-sec{font-family:'Archivo';font-weight:800;font-size:13.5px;letter-spacing:.02em;margin:20px 0 11px;display:flex;align-items:center;gap:8px;color:var(--ink)}
+  .g-sec svg{width:16px;height:16px;color:var(--teal);flex:none}
+  ol.g-steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:9px}
+  ol.g-steps li{counter-increment:s;position:relative;padding:3px 0 3px 42px;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+  ol.g-steps li b{color:var(--ink)}
+  ol.g-steps li::before{content:counter(s);position:absolute;left:0;top:1px;width:27px;height:27px;border-radius:7px;background:var(--teal);color:#fff;font-family:'JetBrains Mono';font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
+  ul.g-tips{list-style:none;display:flex;flex-direction:column;gap:8px}
+  ul.g-tips li{position:relative;padding-left:22px;font-size:13px;line-height:1.5;color:var(--ink-2)}
+  ul.g-tips li::before{content:"";position:absolute;left:3px;top:7px;width:7px;height:7px;border-radius:2px;background:var(--amber)}
+  .g-tools{display:flex;flex-wrap:wrap;gap:7px}
+  .g-tools span{font-size:12px;font-weight:600;color:var(--ink-2);background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:5px 12px}
+
+  /* ---- blog / çözüm rehberi ---- */
+  .blogview{max-width:1040px;margin:0 auto;padding:26px 20px 64px;width:100%}
+  .blog-hero{margin-bottom:6px}
+  .blog-hero .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);font-weight:700}
+  .blog-hero h2{font-family:'Archivo',sans-serif;font-weight:800;font-size:clamp(24px,4vw,33px);letter-spacing:-.015em;margin:8px 0 10px;line-height:1.08}
+  .blog-hero p{font-size:14.5px;color:var(--muted);line-height:1.6;max-width:660px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 22px}
+  .chip{font-size:13px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:7px 14px;cursor:pointer;transition:.15s}
+  .chip:hover{border-color:var(--teal);color:var(--teal-d)}
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .blog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+  .post-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+    cursor:pointer;box-shadow:var(--shadow);transition:.18s;text-align:left;padding:0;display:flex;flex-direction:column;
+  }
+  .post-card:hover{transform:translateY(-3px);border-color:var(--teal);box-shadow:0 6px 22px -10px rgba(22,32,43,.28)}
+  .pc-strip{height:7px;width:100%}
+  .pc-body{padding:17px 18px 18px;display:flex;flex-direction:column;flex:1}
+  .pc-cat{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;display:inline-flex;align-items:center;gap:6px}
+  .pc-cat::before{content:"";width:7px;height:7px;border-radius:2px;background:currentColor}
+  .pc-title{font-family:'Archivo',sans-serif;font-weight:800;font-size:16.5px;line-height:1.24;margin:9px 0 8px;color:var(--ink)}
+  .pc-excerpt{font-size:13px;color:var(--muted);line-height:1.55;flex:1}
+  .pc-foot{margin-top:14px;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--teal-d)}
+  .pc-foot svg{width:14px;height:14px;transition:transform .15s}
+  .post-card:hover .pc-foot svg{transform:translateX(3px)}
+
+  /* article */
+  .post{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+  .post-hd{padding:24px 30px 22px;border-bottom:1px solid var(--line-2)}
+  @media(max-width:560px){.post-hd,.post-bd{padding-left:20px;padding-right:20px}}
+  .post-back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--muted);font-family:'Inter';font-weight:600;font-size:13px;cursor:pointer;margin-bottom:16px;padding:0}
+  .post-back:hover{color:var(--teal-d)}
+  .post-back svg{width:16px;height:16px}
+  .post-cat{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;display:inline-flex;align-items:center;gap:6px}
+  .post-cat::before{content:"";width:8px;height:8px;border-radius:2px;background:currentColor}
+  .post h1{font-family:'Archivo',sans-serif;font-weight:800;font-size:clamp(21px,3.4vw,29px);letter-spacing:-.015em;line-height:1.14;margin:10px 0 12px}
+  .post-lead{font-size:15px;line-height:1.62;color:var(--ink-2)}
+  .post-bd{padding:22px 30px 30px}
+  .post-cta{margin-top:26px;background:var(--ink);border-radius:12px;padding:20px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .post-cta .txt{flex:1;min-width:200px}
+  .post-cta h4{color:#fff;font-family:'Archivo',sans-serif;font-weight:800;font-size:16px}
+  .post-cta p{color:#9fb0ba;font-size:13px;margin-top:4px;line-height:1.5}
+
+  /* ---- buttons extra ---- */
+  .btn-danger{background:#c0392b;color:#fff}
+  .btn-danger:hover{background:#a5311f}
+  #btnLock.admin-on{border-color:var(--teal);color:var(--teal-d);background:var(--teal-wash)}
+  .modal-sm{max-width:420px}
+  .modal-lg{max-width:860px}
+
+  /* ---- login ---- */
+  .lg-input{width:100%;font-size:15px;padding:11px 13px;border:1.5px solid var(--line);border-radius:9px;background:var(--paper)}
+  .lg-input:focus{outline:none;border-color:var(--teal);background:#fff;box-shadow:0 0 0 3px var(--teal-wash)}
+  .lg-err{color:#c0392b;font-size:13px;font-weight:600;margin-top:10px}
+
+  /* ---- admin ---- */
+  .adminview{max-width:1120px;margin:0 auto;padding:26px 20px 64px;width:100%}
+  .admin-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+  .admin-hd .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);font-weight:700}
+  .admin-hd h2{font-family:'Archivo',sans-serif;font-weight:800;font-size:clamp(22px,3.4vw,30px);letter-spacing:-.015em;margin-top:6px}
+  .admin-sub{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px}
+  .asub{background:none;border:none;cursor:pointer;font-family:'Inter';font-weight:600;font-size:13px;color:var(--muted);padding:9px 14px;border-radius:7px;transition:.15s}
+  .asub:hover{color:var(--ink-2)}
+  .asub.active{background:var(--ink);color:#fff}
+  .admin-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .admin-count{font-size:13px;color:var(--muted);font-weight:600}
+  .admin-list{display:flex;flex-direction:column;gap:8px}
+  .admin-item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px 15px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow)}
+  .ai-main{flex:1;min-width:0}
+  .ai-title{font-weight:700;font-size:14px;color:var(--ink)}
+  .ai-meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .ai-meta .pill{display:inline-block;background:var(--paper);border:1px solid var(--line-2);border-radius:20px;padding:1px 9px;margin-right:5px;font-weight:600}
+  .ai-actions{display:flex;gap:6px;flex:none}
+  .ai-cat{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .admin-group-h{font-family:'Archivo';font-weight:800;font-size:13px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px;padding-left:2px}
+  .admin-group-h:first-child{margin-top:0}
+  .btn-mini{padding:7px 12px;font-size:12.5px}
+
+  /* backup */
+  .bk-note{display:flex;gap:11px;background:var(--amber-wash);border:1px solid #f0d3bd;border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;line-height:1.55;color:var(--ink-2)}
+  .bk-note svg{width:18px;height:18px;color:var(--amber-d);flex:none;margin-top:1px}
+  .bk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  .bk-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:var(--shadow)}
+  .bk-card.danger{border-color:#e6c3bd}
+  .bk-card h4{font-family:'Archivo';font-weight:800;font-size:15px;margin-bottom:6px}
+  .bk-card p{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+  .bk-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .bk-input{flex:1;min-width:120px;font-size:13px;padding:8px 11px;border:1.5px solid var(--line);border-radius:8px;background:var(--paper)}
+  .bk-input:focus{outline:none;border-color:var(--teal)}
+
+  /* ---- editor forms ---- */
+  .ed-field{margin-bottom:15px}
+  .ed-field > label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:6px;letter-spacing:.02em}
+  .ed-field input[type=text],.ed-field input[type=number],.ed-field textarea,.ed-field select{
+    width:100%;font-family:'Inter';font-size:13.5px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);
+  }
+  .ed-field textarea{resize:vertical;line-height:1.5;min-height:60px}
+  .ed-field input:focus,.ed-field textarea:focus,.ed-field select:focus{outline:none;border-color:var(--teal);background:#fff}
+  .ed-row{display:grid;gap:12px}
+  .ed-row.c2{grid-template-columns:1fr 1fr}
+  .ed-row.c3{grid-template-columns:1fr 1fr 1fr}
+  @media(max-width:560px){.ed-row.c2,.ed-row.c3{grid-template-columns:1fr}}
+  .ed-sec{font-family:'Archivo';font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--teal-d);margin:22px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line-2)}
+
+  /* material rows */
+  .mat-head,.mat-row{display:grid;grid-template-columns:1.4fr 1fr .8fr .9fr .7fr .8fr 30px;gap:7px;align-items:center}
+  .mat-head{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:6px;padding:0 2px}
+  .mat-row{margin-bottom:7px}
+  .mat-row input,.mat-row select{width:100%;font-family:'Inter';font-size:12.5px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+  .mat-row input.num{font-family:'JetBrains Mono';text-align:right}
+  .mat-row input:focus,.mat-row select:focus{outline:none;border-color:var(--teal)}
+  .mr-del{background:var(--paper);border:1px solid var(--line);color:var(--muted);width:28px;height:30px;border-radius:7px;cursor:pointer;font-size:13px}
+  .mr-del:hover{color:#c0392b;border-color:#e6c3bd}
+  @media(max-width:640px){.mat-head{display:none}.mat-row{grid-template-columns:1fr 1fr;gap:6px;padding:10px;border:1px solid var(--line-2);border-radius:9px;margin-bottom:9px}}
+
+  /* generic list editor rows */
+  .list-row{display:flex;gap:7px;align-items:flex-start;margin-bottom:7px}
+  .list-row .lr-in{flex:1;font-family:'Inter';font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);line-height:1.45}
+  .list-row .lr-in:focus{outline:none;border-color:var(--teal)}
+  .add-row{background:var(--teal-wash);color:var(--teal-d);border:1px dashed var(--teal);border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;margin-top:2px}
+  .add-row:hover{background:#d7e9e6}
+
+  footer.foot{margin-top:auto;border-top:1px solid var(--line);background:var(--surface)}
+  .foot-in{max-width:1320px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+  .foot-in b{color:var(--ink-2)}
+  .foot-in .rt{margin-left:auto}
+
+  /* print */
+  @media print{
+    body{background:#fff;background-image:none}
+    header.top,aside,.opts,.card-h .tag,footer.foot,.no-print{display:none!important}
+    .wrap{display:block;padding:0;max-width:100%}
+    .card{border:none;box-shadow:none}
+    #result.show{display:block!important}
+    .print-head{display:block!important}
+    table.boq th{position:static}
+  }
+  .print-head{display:none;padding:0 0 12px;border-bottom:2px solid var(--ink);margin-bottom:14px}
+  .print-head h2{font-family:'Archivo';font-size:20px}
+  .print-head .meta{font-size:12px;color:#555;margin-top:4px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 11h.01M15 11h.01"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Yapı Maliyet & Analiz</h1>
+        <div class="sub">Metraj · Sarfiyat · Birim Fiyat</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="top-note">Metraj · Analiz · Maliyet</span>
+    </div>
+  </div>
+</header>
+
+<div class="tabbar">
+  <div class="tabbar-in">
+    <nav class="tabs">
+      <button class="tab active" data-tab="calc" onclick="switchTab('calc')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
+        Maliyet Hesaplama
+      </button>
+      <button class="tab" data-tab="blog" onclick="switchTab('blog')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h7M9 11h7"/></svg>
+        Çözüm Rehberi
+      </button>
+      <button class="tab" data-tab="admin" id="tabAdmin" style="display:none" onclick="switchTab('admin')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        Yönetim
+      </button>
+    </nav>
+    <div class="tabbar-actions">
+      <button class="btn btn-out" id="btnPrices" onclick="openSettings()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="btn-label">Fiyat &amp; Sarfiyat</span>
+      </button>
+      <button class="btn btn-out" id="btnLock" onclick="lockClick()" title="Yönetici Girişi">
+        <svg id="lockIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span class="btn-label" id="lockLabel">Yönetici</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="viewCalc">
+  <aside>
+    <div class="aside-h">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span>Hesaplamalar</span>
+    </div>
+    <nav class="tree" id="tree"></nav>
+  </aside>
+
+  <main>
+    <div class="breadcrumb" id="crumb"><b>İmalat seçin</b></div>
+
+    <div class="card">
+      <div class="card-h">
+        <span class="eyebrow">Ölçü Girişi</span>
+        <h2 id="calcTitle">Metraj</h2>
+        <span class="tag" id="calcUnitTag">m²</span>
+      </div>
+      <div class="card-b">
+        <div class="measure">
+          <div class="field">
+            <label>En <span class="u">(metre)</span></label>
+            <div class="in"><input id="en" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" oninput="onDim()"><span class="unit">m</span></div>
+          </div>
+          <div class="field">
+            <label>Boy <span class="u">(metre)</span></label>
+            <div class="in"><input id="boy" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" oninput="onDim()"><span class="unit">m</span></div>
+          </div>
+          <div class="or">veya</div>
+          <div class="field">
+            <label>Alan <span class="u">(doğrudan)</span></label>
+            <div class="in"><input id="m2" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" oninput="onArea()"><span class="unit">m²</span></div>
+          </div>
+        </div>
+        <div class="calc-row">
+          <button class="btn btn-teal btn-lg" onclick="calculate()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
+            Hesapla
+          </button>
+          <div class="hint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Daha doğru sonuç için En ve Boy girin (çevre bağımlı malzemeler için gerekli).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="result">
+      <div class="print-head">
+        <h2 id="printTitle"></h2>
+        <div class="meta" id="printMeta"></div>
+      </div>
+      <div class="card-h no-print">
+        <span class="eyebrow">Malzeme Analizi</span>
+        <h2>Keşif Özeti</h2>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn btn-out" onclick="window.print()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Yazdır / PDF
+          </button>
+        </div>
+      </div>
+
+      <div class="summary" id="summary"></div>
+
+      <div style="overflow-x:auto">
+        <table class="boq">
+          <thead>
+            <tr>
+              <th style="width:34%">Malzeme</th>
+              <th>Birim</th>
+              <th class="r">Sarfiyat</th>
+              <th class="r">Miktar</th>
+              <th class="r">Birim Fiyat</th>
+              <th class="r">Tutar</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+          <tfoot id="foot"></tfoot>
+        </table>
+      </div>
+
+      <div class="opts no-print">
+        <label class="switch"><input type="checkbox" id="optLabor" onchange="calculate()"><span class="track"></span> İşçilik dahil</label>
+        <label class="switch"><input type="checkbox" id="optKdv" onchange="calculate()" checked><span class="track"></span> KDV dahil</label>
+        <span style="font-size:12px;color:var(--muted);margin-left:4px">Birim fiyatları tablodan doğrudan düzenleyebilirsiniz.</span>
+      </div>
+    </div>
+
+    <div class="card" id="placeholder">
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M9 2v6M15 2v6"/><path d="M3 8h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M7 13h4M7 17h10M14 13h3"/></svg>
+        <h3>Soldan bir imalat türü seçin</h3>
+        <p>60x60 tavan, alçıpan, çatı, mantolama veya su yalıtımı için ölçü girip malzeme analizini alın.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="blogview" id="viewBlog" style="display:none">
+  <div id="blogList">
+    <div class="blog-hero">
+      <div class="eyebrow">Çözüm Rehberi</div>
+      <h2>Doğru uygulama, doğru malzeme</h2>
+      <p>Asma tavandan mantolamaya, sıvadan su yalıtımına kadar yapı işlerinin nasıl yapıldığını adım adım anlatıyoruz. Her rehberin sonunda o iş için malzeme ve maliyet hesabına tek tıkla geçebilirsiniz.</p>
+    </div>
+    <div class="chips" id="blogChips"></div>
+    <div class="blog-grid" id="blogGrid"></div>
+  </div>
+
+  <article class="post" id="blogPost" style="display:none">
+    <div class="post-hd">
+      <button class="post-back" onclick="backToList()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Tüm rehberler
+      </button>
+      <div class="post-cat" id="postCat"></div>
+      <h1 id="postTitle"></h1>
+      <p class="post-lead" id="postLead"></p>
+    </div>
+    <div class="post-bd" id="postBody"></div>
+  </article>
+</div>
+
+<div class="adminview" id="viewAdmin" style="display:none">
+  <div class="admin-hd">
+    <div>
+      <div class="eyebrow">Yönetim Paneli</div>
+      <h2>İçerik Yönetimi</h2>
+    </div>
+    <div class="admin-sub">
+      <button class="asub active" data-s="calc" onclick="adminSub('calc')">İmalatlar</button>
+      <button class="asub" data-s="art" onclick="adminSub('art')">Çözüm Rehberi</button>
+      <button class="asub" data-s="backup" onclick="adminSub('backup')">Yedek &amp; Ayarlar</button>
+    </div>
+  </div>
+
+  <div id="adminCalc" class="admin-panel">
+    <div class="admin-bar"><span class="admin-count" id="calcCount"></span><button class="btn btn-teal" onclick="editCalc(null)">+ Yeni İmalat</button></div>
+    <div id="adminCalcList" class="admin-list"></div>
+  </div>
+
+  <div id="adminArt" class="admin-panel" style="display:none">
+    <div class="admin-bar"><span class="admin-count" id="artCount"></span><button class="btn btn-teal" onclick="editArticle(null)">+ Yeni Makale</button></div>
+    <div id="adminArtList" class="admin-list"></div>
+  </div>
+
+  <div id="adminBackup" class="admin-panel" style="display:none">
+    <div class="bk-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      <div><b>Değişiklikler bu tarayıcıda saklanır.</b> Yaptığınız düzenlemeler yalnızca bu cihazda görünür. Herkese açık siteye yansıtmak için <b>Dışa Aktar</b> ile JSON'u indirip dosyaya gömerek yeniden yayınlayın (veya bir yedek olarak saklayın).</div>
+    </div>
+    <div class="bk-grid">
+      <div class="bk-card">
+        <h4>Veri Yedeği</h4>
+        <p>Tüm imalat, malzeme analizi, fiyat ve makale içeriğini tek dosyada yedekleyin.</p>
+        <div class="bk-actions">
+          <button class="btn btn-teal" onclick="exportDB()">Dışa Aktar (JSON)</button>
+          <label class="btn btn-out" style="cursor:pointer">İçe Aktar<input type="file" accept="application/json,.json" style="display:none" onchange="importDB(this)"></label>
+        </div>
+      </div>
+      <div class="bk-card">
+        <h4>Yönetici Şifresi</h4>
+        <p>Panel giriş şifresini değiştirin. (İstemci tarafında saklanır.)</p>
+        <div class="bk-actions">
+          <input id="apNew" type="text" placeholder="Yeni şifre" class="bk-input">
+          <button class="btn btn-out" onclick="changePass()">Güncelle</button>
+        </div>
+      </div>
+      <div class="bk-card danger">
+        <h4>Varsayılana Sıfırla</h4>
+        <p>Tüm içerik ve fiyatları ilk hâline döndürür. Bu işlem geri alınamaz.</p>
+        <div class="bk-actions">
+          <button class="btn btn-danger" onclick="factoryReset()">Her Şeyi Sıfırla</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-bg" id="settings">
+  <div class="modal">
+    <div class="modal-h">
+      <h3>Fiyat & Sarfiyat Ayarları</h3>
+      <button class="x" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-b">
+      <div class="set-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        <span>Sarfiyat katsayıları piyasa ortalamalarıdır. Kendi imalat standardınıza ve birim fiyatlarınıza göre buradan güncelleyin; değerler tarayıcıda kayıtlı kalır.</span>
+      </div>
+      <div class="set-grid">
+        <div class="field">
+          <label style="font-size:12px;font-weight:600;margin-bottom:6px;display:block">Para Birimi</label>
+          <select id="setCur" onchange="saveGlobals()"><option value="₺">₺ TL</option><option value="$">$ USD</option><option value="€">€ EUR</option></select>
+        </div>
+        <div class="field">
+          <label style="font-size:12px;font-weight:600;margin-bottom:6px;display:block">KDV Oranı (%)</label>
+          <input id="setKdv" type="number" min="0" step="1" onchange="saveGlobals()">
+        </div>
+        <div class="field">
+          <label style="font-size:12px;font-weight:600;margin-bottom:6px;display:block">İşçilik ₺/m²</label>
+          <input id="setLabor" type="number" min="0" step="1" onchange="saveGlobals()">
+        </div>
+      </div>
+      <div id="setBody"></div>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-out" onclick="resetDefaults()">Varsayılana Dön</button>
+      <button class="btn btn-teal" onclick="closeSettings()">Kaydet ve Kapat</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-bg" id="login">
+  <div class="modal modal-sm">
+    <div class="modal-h">
+      <h3>Yönetici Girişi</h3>
+      <button class="x" onclick="closeLogin()">✕</button>
+    </div>
+    <div class="modal-b">
+      <p style="font-size:13.5px;color:var(--muted);line-height:1.55;margin-bottom:14px">Yönetim paneline erişmek için şifreyi girin.</p>
+      <input id="lgPass" type="password" placeholder="Şifre" class="lg-input" onkeydown="if(event.key==='Enter')doLogin()">
+      <div id="lgErr" class="lg-err" style="display:none">Hatalı şifre, tekrar deneyin.</div>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-out" onclick="closeLogin()">Vazgeç</button>
+      <button class="btn btn-teal" onclick="doLogin()">Giriş Yap</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDITOR MODAL -->
+<div class="modal-bg" id="editor">
+  <div class="modal modal-lg">
+    <div class="modal-h">
+      <h3 id="editorTitle">Düzenle</h3>
+      <button class="x" onclick="closeEditor()">✕</button>
+    </div>
+    <div class="modal-b" id="editorBody"></div>
+    <div class="modal-f">
+      <button class="btn btn-danger" id="editorDelete" style="display:none;margin-right:auto" onclick="editorDeleteFn()">Sil</button>
+      <button class="btn btn-out" onclick="closeEditor()">Vazgeç</button>
+      <button class="btn btn-teal" onclick="editorSaveFn()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<footer class="foot">
+  <div class="foot-in">
+    <b>Yapı Maliyet & Analiz</b> · Metraj ve birim fiyat analizi aracı
+    <span class="rt">© <span id="yr"></span> · OUN Software</span>
+  </div>
+</footer>
+
+<script>
+/* ============ VARSAYILAN VERİ ============ */
+const mm=(name,note,unit,base,factor,price)=>({name,note,unit,base,factor,price});
+const DEFAULT_DB={
+  version:2,
+  globals:{cur:'₺',kdv:20,labor:0},
+  admin:{pass:'admin1234'},
+  catColors:{'Asma Tavan':'#0d7d72','Alçıpan':'#3b6ea5','Sıva & Saten':'#c77d18','Seramik':'#a85298','Mantolama':'#2f9e6f','Su Yalıtımı':'#2b8ca6','Boya':'#cf5148','Duvar':'#8a6d3b'},
+  calcs:[
+    {id:'al_clip_30',path:['Metal & Alüminyum Tavan','30x30 Asma Tavan'],menuLabel:'Al. Clip in Asma Tavan',name:'Alüminyum Clip-in Asma Tavan (30x30)',labor:145,mats:[
+      mm('Alüminyum Clip-in Panel','30x30 gizli sistem','adet','area',11.11,42),
+      mm('Clip-in Taşıyıcı Profil','3000 mm','adet','area',0.65,72),
+      mm('Duvar L Kenar Profili','3000 mm','adet','perimeter',0.34,55),
+      mm('Askı Seti','teli + maşa + dübel','set','area',1.00,20)]},
+    {id:'gal_clip_30',path:['Metal & Alüminyum Tavan','30x30 Asma Tavan'],menuLabel:'Gal. Clip in Asma Tavan',name:'Galvaniz Clip-in Asma Tavan (30x30)',labor:140,mats:[
+      mm('Galvaniz Clip-in Panel','30x30 gizli sistem','adet','area',11.11,30),
+      mm('Clip-in Taşıyıcı Profil','3000 mm','adet','area',0.65,72),
+      mm('Duvar L Kenar Profili','3000 mm','adet','perimeter',0.34,55),
+      mm('Askı Seti','teli + maşa + dübel','set','area',1.00,18)]},
+    {id:'al_clip_60',path:['Metal & Alüminyum Tavan','60x60 Asma Tavan'],menuLabel:'Al. Clip in Asma Tavan',name:'Alüminyum Clip-in Asma Tavan (60x60)',labor:135,mats:[
+      mm('Alüminyum Clip-in Panel','60x60 gizli sistem','adet','area',2.78,165),
+      mm('Clip-in Taşıyıcı Profil','3000 mm','adet','area',0.55,72),
+      mm('Duvar L Kenar Profili','3000 mm','adet','perimeter',0.34,55),
+      mm('Askı Seti','teli + maşa + dübel','set','area',0.90,20)]},
+    {id:'gal_clip_60',path:['Metal & Alüminyum Tavan','60x60 Asma Tavan'],menuLabel:'Gal. Clip in Asma Tavan',name:'Galvaniz Clip-in Asma Tavan (60x60)',labor:130,mats:[
+      mm('Galvaniz Clip-in Panel','60x60 gizli sistem','adet','area',2.78,120),
+      mm('Clip-in Taşıyıcı Profil','3000 mm','adet','area',0.55,72),
+      mm('Duvar L Kenar Profili','3000 mm','adet','perimeter',0.34,55),
+      mm('Askı Seti','teli + maşa + dübel','set','area',0.90,18)]},
+    {id:'karolam_60',path:['Metal & Alüminyum Tavan','60x60 Asma Tavan'],menuLabel:'Karolam Asma Tavan',name:'Karolam Asma Tavan (60x60)',labor:110,mats:[
+      mm('Karolam Tavan Plakası','60x60 lay-in','adet','area',2.78,95),
+      mm('Ana Taşıyıcı T24','3660 mm','adet','area',0.23,95),
+      mm('Tali Taşıyıcı T24','1200 mm','adet','area',1.40,40),
+      mm('Tali Taşıyıcı T24','600 mm','adet','area',1.67,22),
+      mm('Duvar L Kenar Profili','3000 mm','adet','perimeter',0.34,55),
+      mm('Askı Seti','teli + klips + dübel','set','area',0.90,18)]},
+    {id:'tasyunu_60',path:['Metal & Alüminyum Tavan','60x60 Asma Tavan'],menuLabel:'Taşyünü Asma Tavan',name:'Taşyünü Asma Tavan (60x60)',labor:115,mats:[
+      mm('Taşyünü Tavan Plakası','60x60 lay-in','adet','area',2.78,165),
+      mm('Ana Taşıyıcı T24','3660 mm','adet','area',0.23,95),
+      mm('Tali Taşıyıcı T24','1200 mm','adet','area',1.40,40),
+      mm('Tali Taşıyıcı T24','600 mm','adet','area',1.67,22),
+      mm('Duvar L Kenar Profili','3000 mm','adet','perimeter',0.34,55),
+      mm('Askı Seti','teli + klips + dübel','set','area',0.90,18)]},
+    {id:'alcipan_agrafli',path:['Alçıpan Duvar & Tavan','Alçıpan Asma Tavan'],menuLabel:'Agraflı',name:'Alçıpan Asma Tavan — Agraflı',labor:125,mats:[
+      mm('Alçıpan Levha 9,5 mm','120x200 cm','adet','area',0.47,190),
+      mm('TC60 Tavan C Profili','3000 mm','adet','area',0.30,68),
+      mm('TU28 Duvar U Profili','3000 mm','adet','perimeter',0.34,45),
+      mm('Agraf (Bağlantı Elemanı)','—','adet','area',2.20,9),
+      mm('Dübel + Vida (agraf)','—','adet','area',2.20,2.5),
+      mm('Alçıpan Vidası 25 mm','—','adet','area',23,0.6),
+      mm('Derz Bandı','file/kağıt','mt','area',1.6,3),
+      mm('Derz / Saten Alçı','—','kg','area',0.55,13)]},
+    {id:'alcipan_askili',path:['Alçıpan Duvar & Tavan','Alçıpan Asma Tavan'],menuLabel:'Askı Çubuklu',name:'Alçıpan Asma Tavan — Askı Çubuklu',labor:130,mats:[
+      mm('Alçıpan Levha 9,5 mm','120x200 cm','adet','area',0.47,190),
+      mm('TC60 Tavan C Profili','3000 mm','adet','area',0.30,68),
+      mm('TU28 Duvar U Profili','3000 mm','adet','perimeter',0.34,45),
+      mm('Askı Çubuğu + Ayar Maşası','set','set','area',0.70,24),
+      mm('Dübel + Vida (askı)','—','adet','area',0.70,2.5),
+      mm('Alçıpan Vidası 25 mm','—','adet','area',23,0.6),
+      mm('Derz Bandı','file/kağıt','mt','area',1.6,3),
+      mm('Derz / Saten Alçı','—','kg','area',0.55,13)]},
+    {id:'bolme_cift',path:['Alçıpan Duvar & Tavan','Alçıpan Bölme Duvar'],menuLabel:'Çift Kat Alçıpan',name:'Alçıpan Bölme Duvar — Çift Kat',labor:180,dimHint:'En = Uzunluk, Boy = Yükseklik',mats:[
+      mm('Alçıpan Levha 12,5 mm','çift yüz çift kat','adet','area',1.85,155),
+      mm('DC75 Dikme Profili','3000 mm','adet','area',0.58,64),
+      mm('DU75 Taban/Tavan Profili','3000 mm','adet','area',0.24,58),
+      mm('Taş Yünü Dolgu 5 cm','ses yalıtımı','m²','area',1.0,95),
+      mm('Alçıpan Vidası 25/35 mm','—','adet','area',46,0.65),
+      mm('Derz Bandı','—','mt','area',2.2,3),
+      mm('Derz / Saten Alçı','—','kg','area',0.80,13),
+      mm('Dübel + Vida','profil sabitleme','adet','perimeter',3.0,2.5)]},
+    {id:'bolme_tek',path:['Alçıpan Duvar & Tavan','Alçıpan Bölme Duvar'],menuLabel:'Tek Kat Alçıpan',name:'Alçıpan Bölme Duvar — Tek Kat',labor:150,dimHint:'En = Uzunluk, Boy = Yükseklik',mats:[
+      mm('Alçıpan Levha 12,5 mm','çift yüz tek kat','adet','area',0.90,155),
+      mm('DC75 Dikme Profili','3000 mm','adet','area',0.58,64),
+      mm('DU75 Taban/Tavan Profili','3000 mm','adet','area',0.24,58),
+      mm('Alçıpan Vidası 25 mm','—','adet','area',29,0.6),
+      mm('Derz Bandı','—','mt','area',2.2,3),
+      mm('Derz / Saten Alçı','—','kg','area',0.70,13),
+      mm('Dübel + Vida','profil sabitleme','adet','perimeter',3.0,2.5)]},
+    {id:'giydirme_cift',path:['Alçıpan Duvar & Tavan','Alçıpan Giydirme Duvar'],menuLabel:'Çift Kat Alçıpan',name:'Alçıpan Giydirme Duvar — Çift Kat',labor:140,dimHint:'En = Uzunluk, Boy = Yükseklik',mats:[
+      mm('Alçıpan Levha 12,5 mm','tek yüz çift kat','adet','area',0.94,155),
+      mm('DU/DC Profil veya Agraf','3000 mm','adet','area',0.55,60),
+      mm('Alçıpan Vidası 25/35 mm','—','adet','area',24,0.6),
+      mm('Derz Bandı','—','mt','area',1.2,3),
+      mm('Derz / Saten Alçı','—','kg','area',0.55,13),
+      mm('Dübel + Vida','duvar sabitleme','adet','area',1.6,2.5)]},
+    {id:'giydirme_tek',path:['Alçıpan Duvar & Tavan','Alçıpan Giydirme Duvar'],menuLabel:'Tek Kat Alçıpan',name:'Alçıpan Giydirme Duvar — Tek Kat',labor:120,dimHint:'En = Uzunluk, Boy = Yükseklik',mats:[
+      mm('Alçıpan Levha 12,5 mm','tek yüz tek kat','adet','area',0.47,155),
+      mm('DU/DC Profil veya Agraf','3000 mm','adet','area',0.55,60),
+      mm('Alçıpan Vidası 25 mm','—','adet','area',15,0.6),
+      mm('Derz Bandı','—','mt','area',1.2,3),
+      mm('Derz / Saten Alçı','—','kg','area',0.50,13),
+      mm('Dübel + Vida','duvar sabitleme','adet','area',1.6,2.5)]},
+    {id:'alci_siva',path:[],menuLabel:'Alçı Sıva ve Saten',name:'Alçı Sıva ve Saten',labor:90,mats:[
+      mm('Makine / Kaba Sıva Alçısı','~1 cm','kg','area',10,7.5),
+      mm('Saten Perdah Alçısı','—','kg','area',2,9),
+      mm('Yüzey Astarı','—','kg','area',0.15,40),
+      mm('Galvaniz Köşe Profili','—','mt','perimeter',0.4,8)]},
+    {id:'kara_siva',path:[],menuLabel:'Dış & İç Cephe Kara Sıva',name:'Dış & İç Cephe Kara Sıva',labor:100,mats:[
+      mm('Hazır Kara Sıva Harcı','~2 cm','kg','area',20,5),
+      mm('Sıva Filesi','dış cephe','m²','area',1.05,12),
+      mm('Sıva Köşe Profili','—','mt','perimeter',0.4,8)]},
+    {id:'seramik',path:[],menuLabel:'Seramik Yapıştırıcı & Derz',name:'Seramik Yapıştırıcı & Derz',labor:130,mats:[
+      mm('Seramik Yapıştırıcısı','—','kg','area',5,8),
+      mm('Derz Dolgu Malzemesi','—','kg','area',0.5,22),
+      mm('Fayans Çarpı / Plus','—','adet','area',3,0.5)]},
+    {id:'manto_eps',path:['Dış Cephe Mantolama'],menuLabel:'EPS Karbonlu',name:'Dış Cephe Mantolama — EPS Karbonlu',labor:150,mats:[
+      mm('EPS Karbonlu Levha 5 cm','—','m²','area',1.05,92),
+      mm('Yapıştırıcı Harç','—','kg','area',6,8.5),
+      mm('Donatı Filesi','160 gr','m²','area',1.1,12),
+      mm('Mantolama Dübeli','—','adet','area',6,4),
+      mm('Köşe / Damlalık Profili','—','mt','perimeter',0.5,10),
+      mm('Sıva Harcı (2. kat)','—','kg','area',4,8),
+      mm('Dekoratif Astar','—','kg','area',0.25,45),
+      mm('Dekoratif Kaplama','1,5 mm','kg','area',3,32)]},
+    {id:'manto_tasyunu',path:['Dış Cephe Mantolama'],menuLabel:'Taşyünü',name:'Dış Cephe Mantolama — Taşyünü',labor:165,mats:[
+      mm('Taşyünü Levha 5 cm','—','m²','area',1.05,168),
+      mm('Yapıştırıcı Harç','—','kg','area',7,8.5),
+      mm('Donatı Filesi','160 gr','m²','area',1.1,12),
+      mm('Mantolama Dübeli (metal)','—','adet','area',8,6),
+      mm('Köşe / Damlalık Profili','—','mt','perimeter',0.5,10),
+      mm('Sıva Harcı (2. kat)','—','kg','area',5,8),
+      mm('Dekoratif Astar','—','kg','area',0.25,45),
+      mm('Dekoratif Kaplama','1,5 mm','kg','area',3,32)]},
+    {id:'su_tam',path:['Su Yalıtım'],menuLabel:'Tam Elastik Sürme İzolasyon',name:'Tam Elastik Sürme İzolasyon',labor:85,mats:[
+      mm('Tam Elastik Su Yalıtım Malz.','2 bileşenli, 2 kat','kg','area',3.5,68),
+      mm('Astar','—','kg','area',0.25,42),
+      mm('Köşe Bandı / File','—','mt','perimeter',1.0,7)]},
+    {id:'su_yari',path:['Su Yalıtım'],menuLabel:'Yarı Elastik Sürme İzolasyon',name:'Yarı Elastik Sürme İzolasyon',labor:80,mats:[
+      mm('Yarı Elastik Su Yalıtım Malz.','2 kat','kg','area',3.0,52),
+      mm('Astar','—','kg','area',0.25,42),
+      mm('Köşe Bandı / File','—','mt','perimeter',1.0,7)]},
+    {id:'su_negatif',path:['Su Yalıtım'],menuLabel:'Negatif (İç Cephe) İzolasyon',name:'Negatif (İç Cephe) İzolasyon',labor:90,mats:[
+      mm('Kristalize Negatif Yalıtım Harcı','—','kg','area',3.5,60),
+      mm('Yüzey Doyurma / Astar','—','kg','area',0.30,35),
+      mm('Kılcal Tamir Harcı','—','kg','area',0.5,40)]},
+    {id:'su_pozitif',path:['Su Yalıtım'],menuLabel:'Pozitif (Dış Cephe) İzolasyon',name:'Pozitif (Dış Cephe) İzolasyon',labor:85,mats:[
+      mm('Sürme Esaslı Pozitif Yalıtım','—','kg','area',3.2,55),
+      mm('Astar','—','kg','area',0.25,42),
+      mm('Donatı Filesi','—','m²','area',1.05,10),
+      mm('Köşe Bandı','—','mt','perimeter',1.0,7)]},
+    {id:'boya_ic',path:['Dış ve İç Cephe Boya'],menuLabel:'İç Cephe Boya',name:'İç Cephe Boya',labor:60,mats:[
+      mm('İç Cephe Boyası','silikonlu, 2 kat','lt','area',0.25,45),
+      mm('İç Cephe Astarı','—','lt','area',0.15,38),
+      mm('Alçı / Saten Macun (tamir)','—','kg','area',0.4,14),
+      mm('Zımpara + Maskeleme Bandı','sarf','set','area',0.05,30)]},
+    {id:'boya_dis',path:['Dış ve İç Cephe Boya'],menuLabel:'Dış Cephe Boya',name:'Dış Cephe Boya',labor:75,mats:[
+      mm('Dış Cephe Boyası','silikonlu, 2 kat','lt','area',0.28,55),
+      mm('Dış Cephe Astarı','—','lt','area',0.18,48),
+      mm('Dolgu / Tamir Harcı','—','kg','area',0.3,18)]},
+    {id:'boya_cizgi',path:['Dış ve İç Cephe Boya'],menuLabel:'Otopark ve Yol Çizgi Boyası',name:'Otopark ve Yol Çizgi Boyası',labor:70,dimHint:'Alan = boyanacak çizgi alanı',mats:[
+      mm('Trafik / Yol Çizgi Boyası','—','kg','area',0.6,90),
+      mm('İnceltici / Tiner','—','lt','area',0.1,55),
+      mm('Maskeleme Bandı','—','mt','perimeter',2.0,4)]},
+    {id:'gazbeton',path:[],menuLabel:'Gaz Beton Duvar',name:'Gaz Beton Duvar',labor:110,dimHint:'En = Uzunluk, Boy = Yükseklik',mats:[
+      mm('Gaz Beton Blok','60x25x20 cm','adet','area',6.67,65),
+      mm('Gaz Beton Yapıştırma Harcı','—','kg','area',5,9)]},
+    {id:'tugla',path:[],menuLabel:'Tuğla Duvar',name:'Tuğla Duvar',labor:120,dimHint:'En = Uzunluk, Boy = Yükseklik',mats:[
+      mm('Delikli Tuğla','duvar tuğlası','adet','area',33,4.5),
+      mm('Harç (çimento + kum / hazır)','—','kg','area',25,3)]},
+    {id:'klinker',path:[],menuLabel:'Klinker Tuğla',name:'Klinker Tuğla (Cephe)',labor:180,mats:[
+      mm('Klinker Tuğla','cephe kaplama','adet','area',55,12),
+      mm('Klinker Yapıştırıcısı','—','kg','area',8,14),
+      mm('Klinker Derz Harcı','—','kg','area',4,18)]},
+  ],
+  articles:[
+    {id:'clipin',cat:'Asma Tavan',calc:'al_clip_60',title:'Gizli Sistem (Clip-in) Metal & Alüminyum Asma Tavan',
+      excerpt:'Sökülebilir, temiz görünümlü, ıslak hacme dayanıklı gizli taşıyıcılı tavan sisteminin kuruluşu.',
+      lead:'Koridor, ıslak hacim ve cephe saçaklarında hem şık hem de bakımı kolay bir tavan mı arıyorsunuz? Panelleri alttan bastırmalı (clip-in) gizli sistem, taşıyıcıları göstermeden düz bir yüzey verir ve tek panel sökülerek üstteki tesisata ulaşılabilir. Aşağıda kot almadan panel montajına kadar tüm akışı bulacaksınız.',
+      extra:'',
+      intro:'Gizli taşıyıcılı, panelleri alttan bastırmalı (clip-in) sistemle geçen, sökülebilir metal/alüminyum asma tavan. Islak hacim, koridor ve cephe saçaklarında tercih edilir.',
+      steps:['<b>Kot ve şakül:</b> Bitmiş tavan kotunu lazer/hortum terazi ile duvara işaretleyip çevre hattını çekin.','<b>Kenar profili:</b> Duvar L (kenar) profilini kot çizgisine 30–40 cm aralıkla dübel-vida ile sabitleyin.','<b>Askı düzeni:</b> Ana taşıyıcı hattına 80–100 cm aralıkla askı çubuğu/telini tavana dübelleyin.','<b>Taşıyıcı montajı:</b> Clip-in taşıyıcıları panel modülüne (30x30/60x60) göre askılara asıp terazisini alın.','<b>Panel takma:</b> Panelleri taşıyıcıya alttan bastırarak klipsleyin; kenarlarda ölçüsünde kesin.','<b>Kontrol:</b> Fuga hizası ve terazisini kontrol edip gerekli ayarı maşadan yapın.'],
+      tips:['Alüminyum panellerde parmak izine karşı eldivenle çalışın; koruyucu filmi montaj sonrası soyun.','Islak hacimde galvaniz yerine alüminyum panel korozyona daha dayanıklıdır.','Panel kesiminde giyotin/el makası kullanın; taşlama çapak ve ısı izi bırakır.'],
+      tools:['Lazer distomat','Su terazisi','Vidalama','Kenar makası','Matkap']},
+    {id:'layin',cat:'Asma Tavan',calc:'karolam_60',title:'Taşıyıcılı (Lay-in) Asma Tavan: Karolam ve Taşyünü',
+      excerpt:'Ofis ve mağazaların klasiği: 60x60 plakaların T24 ızgaraya oturtulduğu en pratik sistem.',
+      lead:'En yaygın asma tavan sistemi lay-in ızgaradır: açık T24 taşıyıcı bir ızgara kurulur, 60x60 karolam veya taşyünü plakalar gözlere üstten oturtulur. Hızlı kurulur, kolay sökülür, aydınlatma ve havalandırma entegrasyonu kolaydır. İşte doğru terazide bir tavan için adımlar.',
+      extra:'',
+      intro:'T24 gövdeli açık taşıyıcı ızgaraya 60x60 plakaların üstten oturtulduğu, en yaygın ofis/mağaza asma tavan sistemi (karolam, taşyünü, mineral).',
+      steps:['<b>Kot işaretleme:</b> Bitmiş tavan kotunu çevre duvarlara lazerle aktarın.','<b>Kenar L profili:</b> Kot çizgisine 40 cm aralıkla dübel-vida ile çakın.','<b>Askılar:</b> Ana taşıyıcı hattına 90–120 cm arayla askı teli ve klipsi tavana sabitleyin.','<b>Ana taşıyıcı:</b> 3660 mm ana T profilleri 1200 mm aksla asıp terazi alın.','<b>Tali taşıyıcı:</b> 1200 ve 600 mm tali profilleri geçirerek 600x600 gözleri oluşturun.','<b>Plaka yerleştirme:</b> Plakaları gözlere üstten oturtun; kenarları ölçüsünde kesin.'],
+      tips:['Izgara diklik/gönyesini köşegen ölçerek kontrol edin; kayma fugaları bozar.','Taşyünü plakalar nemden etkilenir; depolama ve montajda kuru tutun.','Aydınlatma/anemostat için plakayı montajdan önce kesip yerleştirin.'],
+      tools:['Lazer','Su terazisi','Kenar makası','Maket bıçağı','Vidalama']},
+    {id:'alcipanTavanAgraf',cat:'Alçıpan',calc:'alcipan_agrafli',title:'Agraflı Alçıpan Asma Tavan',
+      excerpt:'Kot farkı azken hızlı çözüm: tavana agrafla doğrudan bağlanan düşük sarkımlı alçıpan tavan.',
+      lead:'Mevcut tavanla yeni tavan arasında az boşluk varsa, askı çubuklarıyla uğraşmadan agraf (braket) ile doğrudan bağlanan sistem idealdir. Düşük sarkım, hızlı montaj. Tesisat için derin boşluk gerekmiyorsa en ekonomik alçıpan tavan çözümüdür.',
+      extra:'',
+      intro:'Mevcut tavana agraf (askı braketi) ile doğrudan bağlanan, düşük sarkımlı alçıpan asma tavan. Kot farkı azsa tercih edilir.',
+      steps:['<b>Kot ve hat:</b> Çevre kotunu işaretleyip TU28 duvar U profilini duvara çakın.','<b>Agraf montajı:</b> Tavana 60–80 cm aralıkla agrafları dübel-vida ile sabitleyin.','<b>TC60 profil:</b> Tavan C profillerini agraflara geçirip 40 cm aksla terazisinde kurun.','<b>Levha kaplama:</b> 9,5 mm alçıpanı şaşırtmalı derzle 25 mm vida ile 17–20 cm aralıkla vidalayın.','<b>Derz:</b> Derz bandını çekip saten/derz alçısı ile 2–3 pasoda dolgu yapın.','<b>Zımpara:</b> Kuruyan yüzeyi zımparalayıp boyaya hazır hale getirin.'],
+      tips:['Tesisat için yeterli boşluk yoksa agraf yerine askı çubuklu sisteme geçin.','Vida başını kağıdı yırtmadan hafif gömün; aksi halde alçı tutmaz.','Derz alçısını fazla sulandırmayın, çatlama yapar.'],
+      tools:['Lazer','Vidalama','Spatula/mala','Zımpara','Maket bıçağı']},
+    {id:'alcipanTavanAski',cat:'Alçıpan',calc:'alcipan_askili',title:'Askı Çubuklu Alçıpan Asma Tavan',
+      excerpt:'Tesisat boşluğu ve büyük kot farkları için ayarlı askı çubuklu alçıpan tavan.',
+      lead:'Tavan arasından havalandırma, tesisat veya spot aydınlatma geçecekse yeterli boşluğa ihtiyacınız var. Askı çubuğu + ayar maşası sistemi, tavanı istediğiniz kotta ve tam terazisinde asmanıza imkân verir. Adımları ve maşa ayarının püf noktalarını aşağıda topladık.',
+      extra:'',
+      intro:'Askı çubuğu + ayar maşası ile tavandan istenen kotta asılan alçıpan tavan. Tesisat boşluğu ve büyük kot farkları için uygundur.',
+      steps:['<b>Kot ve hat:</b> Çevre kotunu işaretleyip TU28 duvar U profilini çakın.','<b>Askı düzeni:</b> Tavana 90 cm aksla askı çubuklarını dübelleyip ayar maşalarını takın.','<b>TC60 profil:</b> Tavan C profillerini maşalara geçirip 40 cm aksla terazi alın.','<b>Levha kaplama:</b> 9,5 mm alçıpanı şaşırtmalı derzle 25 mm vida ile kaplayın.','<b>Derz:</b> Derz bandı + saten alçısı ile 2–3 pasoda kapatın.','<b>Zımpara:</b> Yüzeyi zımparalayıp boyaya hazırlayın.'],
+      tips:['Maşa ayarıyla terazisini montaj bitmeden alın; sonradan zordur.','Ağır aydınlatma için ilave askı takviyesi yapın.','Büyük tavanlarda dilatasyon (genleşme) derzi bırakın.'],
+      tools:['Lazer','Vidalama','Maşa/pense','Spatula','Zımpara']},
+    {id:'bolme',cat:'Alçıpan',calc:'bolme_tek',title:'Alçıpan Bölme Duvar: Tek Kat mı, Çift Kat mı?',
+      excerpt:'İskelet + çift yüz kaplama + yalıtım ile hızlı, hafif ayırma duvarı; ses ve yangın seçenekleriyle.',
+      lead:'Mekânı bölmek için tuğla örmeye gerek yok. DC/DU profil iskelet üzerine iki yüzü alçıpanla kaplanan bölme duvar, hafif ve hızlıdır. Tek kat ekonomiktir; çift kat kaplama ve taş yünü dolgu ise ses ve yangın dayanımını belirgin artırır. Hangisini seçeceğinize karar verirken şu akışı izleyin.',
+      extra:'<div class="g-note"><b>Tek kat mı, çift kat mı?</b> Tek kat hızlı ve ekonomiktir, ofis ayırma duvarlarında yeterlidir. Çift kat kaplama + taş yünü dolgu, otel/hastane gibi ses ve yangın gerektiren yerlerde tercih edilir.</div>',
+      intro:'DC/DU profil iskelet üzerine iki yüzü alçıpanla kaplanan, içi yalıtım dolgulu ayırma duvarı. Tek kat/çift kat ve yalıtım ses/yangın performansını belirler.',
+      steps:['<b>Aks çizimi:</b> Duvar hattını yerde ve tavanda şakülle karşılıklı işaretleyin.','<b>Taban/tavan profili:</b> DU75 profilleri ses bandı üstüne 60 cm aksla dübelleyin.','<b>Dikmeler:</b> DC75 dikmeleri 40–60 cm aksla U profillere geçirin.','<b>Tek yüz kaplama:</b> Bir yüzü 12,5 mm alçıpanla 25 cm vida aralığıyla vidalayın.','<b>Yalıtım + tesisat:</b> Taş yünü dolguyu yerleştirip elektrik/tesisatı geçirin.','<b>İkinci yüz + derz:</b> Diğer yüzü kaplayıp derz bandı ve alçı ile kapatın.'],
+      tips:['Çift kat kaplama ses ve yangın dayanımını belirgin artırır.','Islak hacim yüzünde yeşil (suya dayanıklı) alçıpan kullanın.','Profil-döşeme arasına ses bandı koyarsanız darbe sesi azalır.'],
+      tools:['Lazer/şakül','Vidalama','Kenar makası','Maket bıçağı','Spatula']},
+    {id:'giydirme',cat:'Alçıpan',calc:'giydirme_tek',title:'Alçıpan Giydirme Duvar ile Yüzey İyileştirme',
+      excerpt:'Bozuk, nemli veya soğuk duvarların önüne tek yüz kaplama ile düzgün, yalıtımlı yüzey.',
+      lead:'Eski, dalgalı ya da soğuk bir duvarı sıvayla düzeltmek yerine önüne alçıpan giydirmek çoğu zaman daha hızlı ve temiz sonuç verir. Profil arasına yalıtım koyarak ısı/ses konforu da kazandırır. Rutubet varsa önce alınması gereken önlemleri de anlattık.',
+      extra:'',
+      intro:'Mevcut duvarın önüne tek yüz alçıpan kaplayarak düzgün/yalıtımlı yüzey elde etme. Nemli, bozuk veya soğuk duvarların iyileştirilmesinde kullanılır.',
+      steps:['<b>Yüzey hazırlığı:</b> Gevşek sıvayı temizleyin, kaba düzensizlikleri alın.','<b>Taşıyıcı:</b> DU/DC profil veya agrafları 40–60 cm aksla sabitleyin (ya da yapıştırma alçısıyla).','<b>Levha kaplama:</b> 12,5 mm alçıpanı tek yüz vidalayın; çift kat isteniyorsa şaşırtmalı ikinci kat.','<b>Yalıtım (ops.):</b> Profil arası boşluğa levha yalıtım koyabilirsiniz.','<b>Derz:</b> Derz bandı + alçı ile birleşimleri kapatın.','<b>Zımpara:</b> Yüzeyi zımparalayıp boyaya hazırlayın.'],
+      tips:['Rutubetli duvarda önce nem bariyeri/su yalıtımı değerlendirin.','Yapıştırma alçısı yöntemi profilsiz ve hızlıdır ama zeminde boşluk bırakır.','Priz/anahtar kutularını levha öncesi işaretleyin.'],
+      tools:['Vidalama','Mala','Kenar makası','Maket bıçağı','Zımpara']},
+    {id:'alciSiva',cat:'Sıva & Saten',calc:'alci_siva',title:'Alçı Sıva ve Saten ile Boyaya Hazır Yüzey',
+      excerpt:'İç mekânda kaba alçı + saten perdah ile pürüzsüz, boyaya hazır duvar ve tavan.',
+      lead:'Boyanın güzel durması, altındaki yüzeyin düzgünlüğüne bağlıdır. Kaba alçı sıva ile yüzeyi doğrultup saten perdahla pürüzsüz hale getirmek, iç mekânda en yaygın bitirme yöntemidir. Alçının açık kalma süresini yönetmek işin kalbidir; adımlarda buna dikkat çektik.',
+      extra:'',
+      intro:'İç mekân duvar/tavanlarında kaba alçı sıva + saten perdah ile boyaya hazır düzgün yüzey elde etme.',
+      steps:['<b>Yüzey hazırlığı:</b> Tozu alın, emici yüzeye astar sürün; köşelere galvaniz köşe profili yerleştirin.','<b>Alçı hazırlama:</b> Kaba/makine alçısını su içine serperek topaksız karıp dinlendirin.','<b>Kaba sıva:</b> Mastar ve mala ile ~1 cm çekip yüzeyi mastarlayın.','<b>Perdah:</b> Priz almadan yüzeyi perdahlayın; köşe ve kenarları düzeltin.','<b>Saten:</b> Kuruyan yüzeye ince saten alçısını 1–2 pasoda çekin.','<b>Zımpara:</b> Kuruduktan sonra hafif zımparayla boyaya hazırlayın.'],
+      tips:['Alçının açık kalma (priz) süresine dikkat; fazla harç boşa gider.','Emici yüzeye astar sürmezseniz alçı çabuk kavrar, işlenemez.','Tek seferde çok kalın çekmeyin, çatlar.'],
+      tools:['Mala','Mastar','Perdah malası','Köşe profili','Zımpara']},
+    {id:'karaSiva',cat:'Sıva & Saten',calc:'kara_siva',title:'Dış & İç Cephe Kara Sıva',
+      excerpt:'Mantolama, seramik veya son kat sıva öncesi taşıyıcı çimento esaslı kaba sıva.',
+      lead:'Kara sıva, üzerine gelecek mantolama, seramik veya dekoratif sıvanın oturacağı sağlam zemini oluşturur. Doğru aderans, mastar anoları ve kür yapılmazsa çatlar. Cephede uzun ömür için serpme ve kürü asla atlamayın; nedenini adımlarda açıkladık.',
+      extra:'',
+      intro:'Çimento esaslı kaba sıva ile iç/dış cephede taşıyıcı yüzey oluşturma; üstüne mantolama, seramik veya son kat sıva gelebilir.',
+      steps:['<b>Yüzey ıslatma:</b> Tozu alıp yüzeyi nemlendirin; köşe profillerini yerleştirin.','<b>Serpme:</b> Aderans için çimento şerbetiyle ince serpme (şap) yapın.','<b>Mastar anoları:</b> Şakül ve terazide mastar şeritleri oluşturun.','<b>Harç çekme:</b> Kara sıva harcını mala ile ~2 cm çekip mastarlayın.','<b>File (dış cephe):</b> Gerekli yerlerde sıva filesini harç içine gömün.','<b>Perdah/kür:</b> Tahta mala ile perdahlayıp birkaç gün nemli kürleyin.'],
+      tips:['Dış cephede güneş/rüzgârda hızlı kuruma çatlatır; kürü ihmal etmeyin.','Tek pasoda 2 cm’i aşmayın; gerekiyorsa iki katta çekin.','Farklı malzeme (beton–tuğla) geçişlerine file şarttır.'],
+      tools:['Mala','Mastar','Şakül','Köşe profili','Sıva makinesi (ops.)']},
+    {id:'seramik',cat:'Seramik',calc:'seramik',title:'Seramik Yapıştırma ve Derz Uygulaması',
+      excerpt:'Zemin ve duvarda çimento esaslı yapıştırıcıyla düzgün, boşluksuz seramik döşeme.',
+      lead:'Seramiğin uzun ömürlü olması; düz zemin, doğru dişli mala ve boşluksuz yapıştırmayla başlar. Islak hacim ve dış mekânda çift taraflı yapıştırma şarttır. Derzi doğru zamanda temizlemek de yüzey görünümünü belirler. İşte sağlam bir uygulamanın adımları.',
+      extra:'',
+      intro:'Zemin/duvara çimento esaslı yapıştırıcıyla seramik/fayans döşeme ve derz dolgusu.',
+      steps:['<b>Zemin kontrol:</b> Yüzeyin düz, sağlam ve terazisinde olduğunu doğrulayın; gerekirse tesviye şapı.','<b>Yapıştırıcı:</b> Tozu suyla topaksız karıp dinlendirin.','<b>Tarama:</b> Uygun dişli mala ile yapıştırıcıyı tek yönde tarayın.','<b>Döşeme:</b> Seramiği bastırıp hafif kaydırarak oturtun; çarpı/plus ile derz payı verin.','<b>Terazi/hiza:</b> Her karoyu terazi ve hizada kontrol edip fazla harcı silin.','<b>Derz:</b> 24 saat sonra çarpıları alıp derz dolgusunu uygulayın, süngerle temizleyin.'],
+      tips:['Islak hacim ve dış mekânda çift taraflı (sırt + zemin) yapıştırma yapın.','Büyük ebat karolarda dişli mala numarasını büyütün.','Derzi harç tam sertleşmeden temizleyin; yoksa film tabakası kalır.'],
+      tools:['Dişli mala','Karo kesme','Su terazisi','Derz süngeri','Mikser']},
+    {id:'mantolama',cat:'Mantolama',calc:'manto_eps',title:'Dış Cephe Mantolama: EPS ve Taşyünü',
+      excerpt:'Enerji faturasını düşüren, yoğuşmayı önleyen cephe ısı yalıtımının doğru uygulaması.',
+      lead:'Mantolama sadece levha yapıştırmak değildir; su basman profili, doğru dübel sayısı, bindirmeli file ve kür bir bütündür. EPS ekonomik ve hafif, taşyünü ise yangın (A1) ve buhar geçirgenliği açısından üstündür. Hangisini seçerseniz seçin, çatlamayan bir cephe için bu akışı izleyin.',
+      extra:'<div class="g-note"><b>EPS mi, taşyünü mü?</b> EPS daha ekonomik ve uygulaması kolaydır. Taşyünü yanmazdır (A1) ve nefes alır; yüksek binalarda ve yangın gereksinimlerinde tercih edilir, dübeli metal seçilir.</div>',
+      intro:'Cepheye ısı yalıtım levhası + file/sıva + dekoratif kaplama uygulayarak enerji tasarrufu ve nem/yoğuşma kontrolü sağlama.',
+      steps:['<b>Su basman profili:</b> Başlangıç kotuna alüminyum start profilini terazide çakın.','<b>Levha yapıştırma:</b> Yapıştırıcıyı levha sırtına çevre+nokta sürüp şaşırtmalı yapıştırın.','<b>Dübelleme:</b> 24 saat sonra levha başına ~6 (taşyününde ~8) dübel çakın.','<b>Donatı sıvası:</b> İlk kat harcı çekip donatı filesini bindirmeli olarak içine gömün.','<b>Köşe/damlalık:</b> Köşe profili ve denizlik damlalıklarını yerleştirin.','<b>Astar + kaplama:</b> Kuruyan yüzeye astar sürüp dekoratif kaplamayı desenleyerek uygulayın.'],
+      tips:['Filesiz veya az bindirmeli file çatlamaya yol açar.','Taşyünü buhar geçirgenliği yüksek, yangın sınıfı A1; dübeli metal seçin.','Son kat boya/kaplama için sıva tam kürlenmeden uygulama yapmayın.'],
+      tools:['Start profili','Dişli mala','Dübel matkabı','File makası','Mala']},
+    {id:'suYalitim',cat:'Su Yalıtımı',calc:'su_pozitif',title:'Sürme Su Yalıtımı: Pozitif, Negatif, Elastik',
+      excerpt:'Islak hacim, teras ve temellerde su kaçağını durduran sürme membran uygulaması.',
+      lead:'Su nereden geliyor ve hangi yönden bastırıyor? Doğru ürün seçimi buna bağlıdır. Suyla aynı yönde çalışan pozitif, ters yönde çalışan negatif; hareketli çatlaklar için tam elastik, sabit yüzeyler için yarı elastik ürünler kullanılır. Ortak uygulama adımları ve tip seçimini birlikte verdik.',
+      extra:'<div class="g-note"><b>Hangi tipi seçmeli?</b> Teras/açık alan → <b>tam elastik</b>. Sabit yüzey → <b>yarı elastik</b>. Dıştan su basıyor → <b>pozitif</b>. İçten (bodrum/perde) basınç var → <b>negatif</b> (kristalize ürün).</div>',
+      intro:'Sürme esaslı membranla ıslak hacim, teras, temel ve perde duvarlarda su geçişini engelleme. Uygulama yönü (pozitif/negatif) ve elastikiyet ürünü belirler.',
+      steps:['<b>Yüzey hazırlığı:</b> Yüzeyi temizleyip sağlamlaştırın; keskin köşeleri pahlayın, içbükeyleri harçla yuvarlatın.','<b>Astar:</b> Emici yüzeye astar sürüp kurumasını bekleyin.','<b>Detay bandı:</b> Köşe ve süzgeç çevrelerine su yalıtım bandı/file yerleştirin.','<b>1. kat:</b> Malzemeyi fırça/mala ile tek yönde sürün.','<b>2. kat:</b> İlk kat kuruyunca dik yönde ikinci katı uygulayın (toplam sarfiyata dikkat).','<b>Test/koruma:</b> Su testi yapın; üstüne şap/seramik gelecekse koruma süresine uyun.'],
+      tips:['Terasta hareketli çatlaklar için tam elastik ürün seçin.','Negatif (iç) uygulamada su basıncına dayanıklı kristalize ürün kullanın.','Köşe detayları en sık su alan yerdir; bandı ihmal etmeyin.'],
+      tools:['Fırça/rulo','Mala','Karıştırıcı','Su yalıtım bandı']},
+    {id:'boyaIc',cat:'Boya',calc:'boya_ic',title:'İç Cephe Boya',
+      excerpt:'Astar + iki kat boya ile leke geçirmeyen, düzgün iç mekân yüzeyleri.',
+      lead:'İyi bir iç cephe boyası, hazırlıkla başlar: macun, zımpara ve mutlaka astar. Astarı atlamak sarfiyatı artırır ve alttan leke geçirir. Kat aralarını beklemek, iz bırakmayan düzgün bir yüzeyin sırrıdır. İşte temiz bir sonuç için sıralı adımlar.',
+      extra:'',
+      intro:'İç mekân duvar/tavanların astar + son kat boya ile bitirilmesi.',
+      steps:['<b>Hazırlık:</b> Mobilya/zemini örtün; çatlak ve boşlukları macunla doldurun.','<b>Zımpara:</b> Yüzeyi zımparalayıp tozunu alın.','<b>Astar:</b> Emici/leke yapan yüzeye astar sürün.','<b>1. kat:</b> Boyayı köşelerden fırça, geniş alanda rulo ile çekin.','<b>2. kat:</b> Kuruma süresine uyup ikinci katı atın.','<b>Kontrol:</b> Işığa karşı iz/geçiş kontrolü yapıp rötuş atın.'],
+      tips:['Astarsız direkt boya sarfiyatı artırır ve leke geçirir.','Rulo tüy boyunu yüzeye göre seçin (düz duvar için kısa tüy).','Kat aralarını beklemeden ikinci kat iz bırakır.'],
+      tools:['Rulo','Fırça','Macun/spatula','Zımpara','Maskeleme bandı']},
+    {id:'boyaDis',cat:'Boya',calc:'boya_dis',title:'Dış Cephe Boya',
+      excerpt:'Silikon esaslı astar + boya ile hava koşullarına dayanıklı, su itici cephe.',
+      lead:'Dış cephe boyası yağmura, güneşe ve neme karşı ilk savunma hattıdır. Silikonlu ürünler su itmesine rağmen nefes alır. Doğru hava koşulu ve ıslak kenar bırakmadan çalışmak, ek izi olmayan homojen bir cephe için kritiktir.',
+      extra:'',
+      intro:'Dış cephede silikon esaslı astar + boya ile hava koşullarına dayanıklı, su itici yüzey elde etme.',
+      steps:['<b>Yüzey onarımı:</b> Kabaran eski boyayı ve gevşek sıvayı temizleyip çatlakları onarın.','<b>Astar:</b> Dış cephe astarını sürüp kurumasını bekleyin.','<b>Detay:</b> Denizlik/damlalık ve derz detaylarını kontrol edin.','<b>1. kat:</b> Boyayı üstten aşağı, ıslak kenar bırakmadan çekin.','<b>2. kat:</b> Kuruma sonrası ikinci katı uygulayın.','<b>Kontrol:</b> Ek yeri/geçişleri gün ışığında kontrol edin.'],
+      tips:['Doğrudan güneş ve yağmurda uygulama yapmayın.','Silikonlu boya su iticidir ama nefes alır; nemli cephede tercih edin.','Renk tutarlılığı için aynı parti (lot) boyayı karıştırıp kullanın.'],
+      tools:['Rulo','Fırça','İskele/sepet','Astar','Spatula']},
+    {id:'boyaCizgi',cat:'Boya',calc:'boya_cizgi',title:'Otopark ve Yol Çizgi Boyası',
+      excerpt:'Otopark, yol ve depo zeminlerinde kalıcı, net trafik çizgileri ve alan işaretleme.',
+      lead:'Zemin çizgilerinin trafiğe ve aşınmaya dayanması; temiz, kuru zemin ve doğru boya kalınlığına bağlıdır. Şablon ve maskeleme ile keskin kenarlar, ikinci kat ile dayanım elde edilir. İşaretlemeyi kalıcı kılmanın adımlarını topladık.',
+      extra:'',
+      intro:'Otopark, yol ve depo zeminlerinde trafik/çizgi boyasıyla yönlendirme ve alan işaretleme.',
+      steps:['<b>Zemin temizliği:</b> Yüzeyi süpürüp yağ/tozdan arındırın; gerekirse basınçlı yıkayın.','<b>Ölçü/şablon:</b> Çizgi hattını şerit metre ve iple çıkarıp maskeleme bandıyla sınırlayın.','<b>Astar (ops.):</b> Gözenekli zemine astar veya inceltilmiş ilk kat sürün.','<b>Uygulama:</b> Çizgi boyasını fırça, rulo veya çizgi makinesiyle çekin.','<b>2. kat:</b> Trafik yoğun alanda ikinci kat dayanımı artırır.','<b>Kuruma:</b> Bandı boya yaşken alın; trafiği tam kuruyana dek kapatın.'],
+      tips:['Nemli/soğuk zeminde boya tutmaz; kuru ve >10°C’de çalışın.','Yansıtıcı istenirse cam küreyi yaş boyaya serpin.','İnceltmeyi ürün talimatına göre yapın; fazla tiner dayanımı düşürür.'],
+      tools:['Çizgi makinesi/rulo','Maskeleme bandı','Şerit metre','İp','Süpürge']},
+    {id:'gazbeton',cat:'Duvar',calc:'gazbeton',title:'Gaz Beton Duvar Örgüsü',
+      excerpt:'Hafif, yalıtımlı bloklarla ince harç kullanarak hızlı ve düzgün duvar örme.',
+      lead:'Gaz beton; hafifliği, ısı yalıtımı ve hızlı örülmesiyle bölme/dolgu duvarlarda öne çıkar. İnce yapıştırma harcıyla örülür, ama bunun için ilk sıranın terazisi ve blok yüzeyinin düzgünlüğü şarttır. Kalın harç yalıtımı bozar. Doğru örgünün adımları burada.',
+      extra:'',
+      intro:'Hafif, yalıtımlı gaz beton bloklarla ince yapıştırma harcı kullanarak hızlı bölme/dolgu duvar örme.',
+      steps:['<b>İlk sıra:</b> Terazide harç yatağına ilk sırayı özenle örün (duvarın karesi buna bağlı).','<b>Yapıştırma harcı:</b> İnce harcı dişli mala ile yatay ve düşey yüzeye sürün.','<b>Örgü:</b> Blokları şaşırtmalı (yarım blok) dizip lastik tokmakla oturtun.','<b>Terazi kontrol:</b> Her sırada şakül ve terazi kontrolü yapın.','<b>Bağlantı:</b> Gerekli yerlerde lento ve taşıyıcıya kelepçe bağlantısı yapın.','<b>Tesisat:</b> Kanal açma aletiyle tesisat yuvalarını açın.'],
+      tips:['İnce harç için blok yüzeyi düzgün olmalı; çapakları rendeyle alın.','Kalın harçla örmek yalıtımı ve düzgünlüğü bozar.','Kesim için gazbeton testeresi kullanın; hızlı ve düzgün keser.'],
+      tools:['Dişli mala','Lastik tokmak','Gazbeton testeresi','Rende','Su terazisi']},
+    {id:'tugla',cat:'Duvar',calc:'tugla',title:'Tuğla Duvar Örgüsü',
+      excerpt:'Delikli tuğla ve harçla klasik, sağlam bölme/dolgu duvar örgüsünün temelleri.',
+      lead:'Tuğla duvarın düzgün ve sağlam olması; ilk sıranın terazisine, sabit derz kalınlığına ve doğru harç kıvamına bağlıdır. Tuğlayı ıslatmak, harcın erken kurumasını önler. Şaşırtmalı örgü ve düzenli kontrol ile sağlam bir duvar örmenin yolunu anlattık.',
+      extra:'',
+      intro:'Delikli tuğla ve çimento-kum harcıyla klasik bölme/dolgu duvar örgüsü.',
+      steps:['<b>Kuru dizi:</b> İlk sırayı harçsız dizip kapı/pencere paylarını ayarlayın.','<b>Harç:</b> Çimento-kum (ya da hazır) harcını kıvamında hazırlayın.','<b>İlk sıra:</b> Terazi ve şakülle ilk sırayı harç yatağına örün.','<b>Örgü:</b> Tuğlaları şaşırtmalı örüp derz kalınlığını ~1–1,5 cm sabit tutun.','<b>Kontrol:</b> Her 3–4 sırada terazi/şakül ve gönye kontrolü yapın.','<b>Bağlantı/lento:</b> Kolon–duvar bağlantısı ve boşluk üstlerine lento yapın.'],
+      tips:['Tuğlayı örgüden önce ıslatın; kuru tuğla harcın suyunu çeker.','Harç kıvamı önemli; çok sulu harç duvarı oynatır.','Uzun duvarlarda düşey hareket derzi bırakın.'],
+      tools:['Mala','Çekül/şakül','Su terazisi','Tuğla çekici','İp']},
+    {id:'klinker',cat:'Duvar',calc:'klinker',title:'Klinker Tuğla ile Cephe Kaplama',
+      excerpt:'Dekoratif ve dayanıklı klinker kaplamayla düşük bakımlı, uzun ömürlü cephe.',
+      lead:'Klinker; dona, aşınmaya ve renk solmasına dirençli, bakımı düşük bir cephe kaplamasıdır. Sağlam bir sonuç için donaya dayanıklı yapıştırıcı, çift taraflı yapıştırma ve temiz derz doldurma gerekir. Cephenizi yıllarca taşıyacak uygulamanın adımları aşağıda.',
+      extra:'',
+      intro:'İnce klinker tuğlalarla cephe kaplama; dekoratif, dayanıklı ve düşük bakımlı dış yüzey.',
+      steps:['<b>Yüzey hazırlığı:</b> Cepheyi sağlamlaştırıp gerekirse astar/serpme ile aderans verin.','<b>Ölçü/dizilim:</b> Sıra yüksekliği ve derz payını hesaplayıp başlangıç çıtasını terazide sabitleyin.','<b>Yapıştırıcı:</b> Çimento esaslı klinker yapıştırıcısını dişli mala ile sürün.','<b>Döşeme:</b> Klinkerleri şaşırtmalı bastırıp derz payıyla dizin.','<b>Terazi/hiza:</b> Sık sık terazi, gönye ve derz hizasını kontrol edin.','<b>Derz:</b> Yapıştırıcı priz aldıktan sonra klinker derz harcını doldurup düzeltin.'],
+      tips:['Dış mekân olduğu için donma-çözülmeye dayanıklı yapıştırıcı/derz seçin.','Çift taraflı yapıştırma (sırt+yüzey) düşme riskini azaltır.','Derzi yüzeye bulaştırmadan doldurun; klinker yüzeyi temizlemek zordur.'],
+      tools:['Dişli mala','Derz torbası','Su terazisi','Klinker kesme','İp']},
+  ],
+};
+
+/* ============ DURUM & KALICILIK ============ */
+const LS='yapiHesap_v2';
+let DB, current=null, isAdmin=false, adminSubTab='calc';
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function loadDB(){
+  DB=clone(DEFAULT_DB);
+  try{ const s=JSON.parse(localStorage.getItem(LS)||'null'); if(s&&s.calcs&&s.articles){ DB=s; if(!DB.admin)DB.admin={pass:'admin1234'}; if(!DB.globals)DB.globals={cur:'₺',kdv:20,labor:0}; if(!DB.catColors)DB.catColors=clone(DEFAULT_DB.catColors); } }catch(e){}
+}
+function saveDB(){ try{ localStorage.setItem(LS,JSON.stringify(DB)); }catch(e){} }
+function calcById(id){ return DB.calcs.find(c=>c.id===id); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ============ BİÇİMLENDİRME ============ */
+const nf=new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const nf0=new Intl.NumberFormat('tr-TR',{maximumFractionDigits:0});
+const INT_UNITS=['adet','set','takım'];
+function money(v){ return DB.globals.cur+' '+nf.format(v); }
+function qtyFmt(v,unit){ return INT_UNITS.includes(unit)?nf0.format(v):nf.format(v); }
+
+/* ============ AĞAÇ MENÜ ============ */
+function buildTree(){
+  const t=document.getElementById('tree'); t.innerHTML='';
+  const root={children:[],map:{}};
+  DB.calcs.forEach(c=>{
+    let node=root;
+    (c.path||[]).forEach(seg=>{
+      if(!node.map[seg]){ const g={name:seg,children:[],map:{}}; node.map[seg]=g; node.children.push(g); }
+      node=node.map[seg];
+    });
+    node.children.push({name:c.menuLabel,leaf:true,id:c.id});
+  });
+  root.children.forEach((n,i)=> t.appendChild(renderNode(n,0,[],i===0)));
+}
+function renderNode(node,depth,path,openTop){
+  const el=document.createElement('div'); el.className='node';
+  if(node.leaf){
+    el.classList.add('leaf');
+    const b=document.createElement('button'); b.className='row leaf-row d'+depth; b.dataset.key=node.id;
+    b.innerHTML=`<span class="${depth===0?'sq-dot':'lf-dot'}"></span><span class="lbl">${esc(node.name)}</span>`;
+    b.onclick=()=>selectCalc(node.id,[...path,node.name]);
+    el.appendChild(b); return el;
+  }
+  el.classList.add('grp');
+  if(depth===0 ? openTop : true) el.classList.add('open');
+  const b=document.createElement('button'); b.className='row grp-row d'+depth;
+  b.innerHTML=`<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg><span class="lbl">${esc(node.name)}</span>`;
+  b.onclick=()=>el.classList.toggle('open');
+  el.appendChild(b);
+  const kids=document.createElement('div'); kids.className='kids';
+  node.children.forEach(c=>kids.appendChild(renderNode(c,depth+1,[...path,node.name])));
+  el.appendChild(kids); return el;
+}
+function selectCalc(id,path){
+  const c=calcById(id); if(!c) return;
+  current={id,path};
+  document.querySelectorAll('.leaf-row').forEach(b=>b.classList.toggle('active',b.dataset.key===id));
+  document.getElementById('crumb').innerHTML=path.map((p,i)=> i===path.length-1?`<b>${esc(p)}</b>`:esc(p)).join(' <span class="sep">›</span> ');
+  document.getElementById('calcTitle').textContent=c.name;
+  document.querySelector('.hint').lastChild.textContent = c.dimHint ? ' '+c.dimHint+' — çevre bağımlı malzemeler için En/Boy girin.' : ' Daha doğru sonuç için En ve Boy girin (çevre bağımlı malzemeler için gerekli).';
+  document.getElementById('placeholder').style.display='none';
+  document.getElementById('result').classList.remove('show');
+  if(getArea()>0) calculate();
+}
+
+/* ============ ÖLÇÜ ============ */
+function toNum(id){ const v=parseFloat((document.getElementById(id).value||'').replace(',','.')); return isFinite(v)&&v>0?v:0; }
+function onDim(){ const en=toNum('en'),boy=toNum('boy'); if(en>0&&boy>0) document.getElementById('m2').value=(en*boy).toFixed(2); }
+function onArea(){ document.getElementById('en').value=''; document.getElementById('boy').value=''; }
+function getArea(){ const en=toNum('en'),boy=toNum('boy'); if(en>0&&boy>0)return en*boy; return toNum('m2'); }
+function getPerimeter(){ const en=toNum('en'),boy=toNum('boy'); if(en>0&&boy>0)return 2*(en+boy); const a=getArea(); return a>0?4*Math.sqrt(a):0; }
+
+/* ============ HESAP ============ */
+function qtyRaw(mat,A,P){ if(mat.base==='area')return A*mat.factor; if(mat.base==='perimeter')return P*mat.factor; return mat.factor; }
+function qtyRounded(mat,A,P){ const q=qtyRaw(mat,A,P); return INT_UNITS.includes(mat.unit)?Math.ceil(q):Math.round(q*100)/100; }
+function calculate(){
+  if(!current) return;
+  const c=calcById(current.id); if(!c){ current=null; document.getElementById('placeholder').style.display=''; document.getElementById('result').classList.remove('show'); return; }
+  const A=getArea(), P=getPerimeter();
+  if(A<=0){ shakeInputs(); return; }
+  const rows=document.getElementById('rows'); rows.innerHTML=''; let materialTotal=0;
+  c.mats.forEach((mat,i)=>{
+    const q=qtyRounded(mat,A,P), up=+mat.price||0, line=q*up; materialTotal+=line;
+    const sarf = mat.base==='fixed' ? 'sabit' : (mat.factor+' /'+(mat.base==='area'?'m²':'mt'));
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="name">${esc(mat.name)}${mat.note&&mat.note!=='—'?`<div class="sub">${esc(mat.note)}</div>`:''}</td>
+      <td>${esc(mat.unit)}</td>
+      <td class="r mono" style="color:var(--muted);font-size:12.5px">${sarf}</td>
+      <td class="qty r">${qtyFmt(q,mat.unit)}</td>
+      <td class="price r"><input class="price-edit num no-print" type="number" min="0" step="0.01" value="${up}" onchange="onPriceEdit(${i},this.value)"><span class="print-only" style="display:none">${money(up)}</span></td>
+      <td class="total r">${money(line)}</td>`;
+    rows.appendChild(tr);
+  });
+  const laborOn=document.getElementById('optLabor').checked, kdvOn=document.getElementById('optKdv').checked;
+  const laborRate=(DB.globals.labor&&DB.globals.labor>0)?DB.globals.labor:c.labor;
+  const laborTotal=laborOn?laborRate*A:0, subtotal=materialTotal+laborTotal;
+  const kdv=kdvOn?subtotal*(DB.globals.kdv/100):0, grand=subtotal+kdv;
+  document.getElementById('summary').innerHTML=`
+    <div class="sm"><div class="k">Alan</div><div class="v num">${nf.format(A)} <small>m²</small></div></div>
+    <div class="sm"><div class="k">Çevre</div><div class="v num">${nf.format(P)} <small>m</small></div></div>
+    <div class="sm"><div class="k">Malzeme /m²</div><div class="v num">${money(materialTotal/A)}</div></div>
+    <div class="sm"><div class="k">Toplam /m²</div><div class="v num">${money(grand/A)}</div></div>`;
+  let f=`<tr><td colspan="5" class="lbl">Malzeme Toplamı</td><td class="val">${money(materialTotal)}</td></tr>`;
+  if(laborOn)f+=`<tr><td colspan="5" class="lbl">İşçilik (${money(laborRate)}/m² × ${nf.format(A)})</td><td class="val">${money(laborTotal)}</td></tr>`;
+  if(kdvOn)f+=`<tr><td colspan="5" class="lbl">KDV %${DB.globals.kdv}</td><td class="val">${money(kdv)}</td></tr>`;
+  f+=`<tr class="grand"><td colspan="5" class="lbl">Genel Toplam</td><td class="val">${money(grand)}</td></tr>`;
+  document.getElementById('foot').innerHTML=f;
+  document.getElementById('printTitle').textContent=c.name;
+  document.getElementById('printMeta').textContent=`${current.path.join(' › ')} · Alan ${nf.format(A)} m² · Çevre ${nf.format(P)} m · ${new Date().toLocaleDateString('tr-TR')}`;
+  document.getElementById('result').classList.add('show');
+}
+function onPriceEdit(i,val){ const c=calcById(current.id); if(!c)return; c.mats[i].price=parseFloat(val)||0; saveDB(); calculate(); }
+function shakeInputs(){ const box=document.querySelector('.measure'); box.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:220}); document.getElementById('en').focus(); }
+
+/* ============ FİYAT & SARFİYAT (hızlı) ============ */
+function openSettings(){
+  document.getElementById('setCur').value=DB.globals.cur;
+  document.getElementById('setKdv').value=DB.globals.kdv;
+  document.getElementById('setLabor').value=DB.globals.labor||'';
+  buildSettingsBody();
+  document.getElementById('settings').classList.add('show');
+}
+function closeSettings(){ document.getElementById('settings').classList.remove('show'); if(current&&getArea()>0)calculate(); }
+function saveGlobals(){ DB.globals.cur=document.getElementById('setCur').value; DB.globals.kdv=parseFloat(document.getElementById('setKdv').value)||0; const l=parseFloat(document.getElementById('setLabor').value); DB.globals.labor=isFinite(l)?l:0; saveDB(); }
+function setMat(i,field,val){ const c=calcById(current?current.id:null)||DB.calcs[0]; c.mats[i][field]=parseFloat(val)||0; saveDB(); }
+function buildSettingsBody(){
+  const host=document.getElementById('setBody'); host.innerHTML='';
+  const c=current?calcById(current.id):DB.calcs[0];
+  host.innerHTML=`<div style="font-family:'Archivo';font-weight:800;font-size:15px;margin:4px 0 12px">${esc(c.name)} — Sarfiyat & Fiyat</div>`;
+  const tbl=document.createElement('table'); tbl.style.width='100%'; tbl.style.borderCollapse='collapse'; tbl.style.fontSize='13px';
+  tbl.innerHTML=`<thead><tr>
+    <th style="text-align:left;padding:8px 6px;border-bottom:1.5px solid var(--line);font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em">Malzeme</th>
+    <th style="text-align:right;padding:8px 6px;border-bottom:1.5px solid var(--line);font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em">Sarfiyat</th>
+    <th style="text-align:right;padding:8px 6px;border-bottom:1.5px solid var(--line);font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em">Birim Fiyat</th></tr></thead>`;
+  const tb=document.createElement('tbody');
+  c.mats.forEach((mat,i)=>{
+    const baseLbl = mat.base==='fixed'?'sabit':(mat.base==='area'?'/m²':'/çevre m');
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line-2);font-weight:600">${esc(mat.name)} <span style="color:var(--muted);font-weight:400">(${esc(mat.unit)})</span></td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line-2);text-align:right">
+        <input type="number" step="0.01" min="0" value="${mat.factor}" ${mat.base==='fixed'?'disabled':''} onchange="setMat(${i},'factor',this.value)" style="width:78px;font-family:'JetBrains Mono';text-align:right;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:#fff">
+        <span style="color:var(--muted);font-size:11px">${baseLbl}</span></td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line-2);text-align:right">
+        <input type="number" step="0.01" min="0" value="${mat.price}" onchange="setMat(${i},'price',this.value)" style="width:88px;font-family:'JetBrains Mono';text-align:right;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:#fff"></td>`;
+    tb.appendChild(tr);
+  });
+  tbl.appendChild(tb); host.appendChild(tbl);
+}
+function resetDefaults(){
+  if(!confirm('DİKKAT: Tüm içerik, fiyat ve sarfiyat değerleri (ve makaleler) varsayılana dönecek. Onaylıyor musunuz?'))return;
+  try{localStorage.removeItem(LS);}catch(e){} loadDB(); rebuildAll(); closeSettings();
+}
+
+/* ============ BLOG / ÇÖZÜM REHBERİ ============ */
+let blogFilter='Tümü';
+function catColor(cat){ return DB.catColors[cat]||'#0d7d72'; }
+function buildBlog(){
+  const chipHost=document.getElementById('blogChips');
+  const cats=['Tümü']; DB.articles.forEach(a=>{ if(!cats.includes(a.cat))cats.push(a.cat); });
+  if(!cats.includes(blogFilter)) blogFilter='Tümü';
+  chipHost.innerHTML=cats.map(c=>`<button class="chip${c===blogFilter?' active':''}" onclick="filterBlog('${esc(c).replace(/'/g,"\\'")}')">${esc(c)}</button>`).join('');
+  const grid=document.getElementById('blogGrid');
+  grid.innerHTML=DB.articles.filter(a=>blogFilter==='Tümü'||a.cat===blogFilter).map(a=>{
+    const col=catColor(a.cat);
+    return `<button class="post-card" onclick="openPost('${a.id}')">
+      <div class="pc-strip" style="background:${col}"></div>
+      <div class="pc-body">
+        <span class="pc-cat" style="color:${col}">${esc(a.cat)}</span>
+        <div class="pc-title">${esc(a.title)}</div>
+        <div class="pc-excerpt">${esc(a.excerpt)}</div>
+        <div class="pc-foot">Rehberi oku <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div></button>`;
+  }).join('') || '<p style="color:var(--muted);padding:20px">Bu kategoride makale yok.</p>';
+}
+function filterBlog(cat){ blogFilter=cat; buildBlog(); }
+function backToList(){ document.getElementById('blogPost').style.display='none'; document.getElementById('blogList').style.display='block'; }
+function openPost(id){
+  const a=DB.articles.find(x=>x.id===id); if(!a)return;
+  const col=catColor(a.cat);
+  const catEl=document.getElementById('postCat'); catEl.textContent=a.cat; catEl.style.color=col;
+  document.getElementById('postTitle').textContent=a.title;
+  document.getElementById('postLead').textContent=a.lead;
+  const steps=(a.steps||[]).map(s=>`<li>${s}</li>`).join('');
+  const tips=(a.tips||[]).map(t=>`<li>${t}</li>`).join('');
+  const tools=(a.tools||[]).map(t=>`<span>${esc(t)}</span>`).join('');
+  const linked=calcById(a.calc);
+  const cta = linked ? `<div class="post-cta">
+      <div class="txt"><h4>Bu iş için maliyet çıkaralım</h4><p>${esc(linked.name)} için ölçü girip malzeme listesi ve toplam maliyeti anında hesaplayın.</p></div>
+      <button class="btn btn-amber" onclick="openCalcFromPost('${a.calc}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
+        Maliyeti Hesapla</button></div>` : '';
+  document.getElementById('postBody').innerHTML=`
+    <div class="g-intro">${esc(a.intro)}</div>
+    ${a.extra||''}
+    <div class="g-sec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Uygulama Adımları</div>
+    <ol class="g-steps">${steps}</ol>
+    <div class="g-sec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>Püf Noktaları & Dikkat</div>
+    <ul class="g-tips">${tips}</ul>
+    <div class="g-sec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.3L3 18v3h3l6.4-6.3a4 4 0 0 0 5.3-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg>Gerekli Ekipman</div>
+    <div class="g-tools">${tools}</div>
+    ${cta}`;
+  document.getElementById('blogList').style.display='none';
+  document.getElementById('blogPost').style.display='block';
+  window.scrollTo({top:0,behavior:'auto'});
+}
+function openCalcFromPost(calcId){
+  switchTab('calc');
+  const btn=document.querySelector('.leaf-row[data-key="'+calcId+'"]');
+  if(btn){ let el=btn.parentElement; while(el){ if(el.classList&&el.classList.contains('grp'))el.classList.add('open'); el=el.parentElement; } btn.click(); if(btn.scrollIntoView)btn.scrollIntoView({block:'center'}); }
+}
+
+/* ============ SEKME GEÇİŞİ ============ */
+function switchTab(name){
+  if(name==='admin'&&!isAdmin){ openLogin(); return; }
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  document.getElementById('viewCalc').style.display = name==='calc'?'grid':'none';
+  document.getElementById('viewBlog').style.display = name==='blog'?'block':'none';
+  document.getElementById('viewAdmin').style.display = name==='admin'?'block':'none';
+  document.getElementById('btnPrices').style.display = name==='calc'?'':'none';
+  if(name==='blog') backToList();
+  if(name==='admin') buildAdminLists();
+  window.scrollTo({top:0,behavior:'auto'});
+}
+
+/* ============ YÖNETİCİ GİRİŞİ ============ */
+function updateLockUI(){
+  const b=document.getElementById('btnLock'); const lbl=document.getElementById('lockLabel');
+  document.getElementById('tabAdmin').style.display = isAdmin?'':'none';
+  if(isAdmin){ b.classList.add('admin-on'); b.title='Çıkış Yap'; lbl.textContent='Çıkış'; }
+  else{ b.classList.remove('admin-on'); b.title='Yönetici Girişi'; lbl.textContent='Yönetici'; }
+}
+function lockClick(){ if(isAdmin){ if(confirm('Yönetici oturumunu kapatmak istiyor musunuz?')) logout(); } else openLogin(); }
+function openLogin(){ document.getElementById('lgErr').style.display='none'; document.getElementById('lgPass').value=''; document.getElementById('login').classList.add('show'); setTimeout(()=>document.getElementById('lgPass').focus(),50); }
+function closeLogin(){ document.getElementById('login').classList.remove('show'); }
+function doLogin(){
+  const v=document.getElementById('lgPass').value;
+  if(v===(DB.admin&&DB.admin.pass||'admin1234')){ isAdmin=true; try{sessionStorage.setItem('yapiAdmin','1');}catch(e){} updateLockUI(); closeLogin(); switchTab('admin'); }
+  else document.getElementById('lgErr').style.display='block';
+}
+function logout(){ isAdmin=false; try{sessionStorage.removeItem('yapiAdmin');}catch(e){} updateLockUI(); if(document.querySelector('.tab.active')?.dataset.tab==='admin') switchTab('calc'); }
+
+/* ============ ADMIN: LİSTELER ============ */
+function adminSub(s){ adminSubTab=s; document.querySelectorAll('.asub').forEach(b=>b.classList.toggle('active',b.dataset.s===s)); document.getElementById('adminCalc').style.display=s==='calc'?'':'none'; document.getElementById('adminArt').style.display=s==='art'?'':'none'; document.getElementById('adminBackup').style.display=s==='backup'?'':'none'; }
+function buildAdminLists(){
+  // imalatlar (kategoriye göre gruplu)
+  const cl=document.getElementById('adminCalcList'); cl.innerHTML='';
+  document.getElementById('calcCount').textContent=DB.calcs.length+' imalat';
+  const groups={}; const order=[];
+  DB.calcs.forEach(c=>{ const key=(c.path&&c.path.length?c.path.join(' › '):'Genel'); if(!groups[key]){groups[key]=[];order.push(key);} groups[key].push(c); });
+  order.forEach(g=>{
+    const h=document.createElement('div'); h.className='admin-group-h'; h.textContent=g; cl.appendChild(h);
+    groups[g].forEach(c=>{
+      const it=document.createElement('div'); it.className='admin-item';
+      it.innerHTML=`<div class="ai-main"><div class="ai-title">${esc(c.menuLabel)}</div><div class="ai-meta"><span class="pill">${c.mats.length} malzeme</span> ${esc(c.name)}</div></div>
+        <div class="ai-actions"><button class="btn btn-out btn-mini" onclick="editCalc('${c.id}')">Düzenle</button><button class="btn btn-danger btn-mini" onclick="delCalc('${c.id}')">Sil</button></div>`;
+      cl.appendChild(it);
+    });
+  });
+  // makaleler
+  const al=document.getElementById('adminArtList'); al.innerHTML='';
+  document.getElementById('artCount').textContent=DB.articles.length+' makale';
+  DB.articles.forEach(a=>{
+    const it=document.createElement('div'); it.className='admin-item';
+    it.innerHTML=`<div class="ai-main"><div class="ai-title">${esc(a.title)}</div><div class="ai-meta"><span class="ai-cat" style="color:${catColor(a.cat)}">${esc(a.cat)}</span> · ${(a.steps||[]).length} adım</div></div>
+      <div class="ai-actions"><button class="btn btn-out btn-mini" onclick="editArticle('${a.id}')">Düzenle</button><button class="btn btn-danger btn-mini" onclick="delArticle('${a.id}')">Sil</button></div>`;
+    al.appendChild(it);
+  });
+}
+
+/* ============ ADMIN: EDİTÖR ============ */
+let _save=null,_del=null;
+function closeEditor(){ document.getElementById('editor').classList.remove('show'); }
+function editorSaveFn(){ if(_save)_save(); }
+function editorDeleteFn(){ if(_del)_del(); }
+function slug(s){ return (s||'').toLowerCase().replace(/[çğıöşü]/g,m=>({'ç':'c','ğ':'g','ı':'i','ö':'o','ş':'s','ü':'u'}[m])).replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,24)||'yeni'; }
+function uniqueId(base,exists){ let id=base,n=2; while(exists(id)){ id=base+'_'+n; n++; } return id; }
+
+function addMatRow(m){
+  m=m||{name:'',note:'',unit:'adet',base:'area',factor:1,price:0};
+  const host=document.getElementById('matRows');
+  const div=document.createElement('div'); div.className='mat-row';
+  const units=['adet','set','m²','mt','kg','lt','takım'];
+  const bases=[['area','/m²'],['perimeter','/çevre'],['fixed','sabit']];
+  div.innerHTML=`
+    <input class="mr-name" placeholder="Malzeme" value="${esc(m.name)}">
+    <input class="mr-note" placeholder="Not" value="${esc(m.note||'')}">
+    <select class="mr-unit">${units.map(u=>`<option ${u===m.unit?'selected':''}>${u}</option>`).join('')}</select>
+    <select class="mr-base">${bases.map(b=>`<option value="${b[0]}" ${b[0]===m.base?'selected':''}>${b[1]}</option>`).join('')}</select>
+    <input class="mr-factor num" type="number" step="0.01" value="${m.factor}">
+    <input class="mr-price num" type="number" step="0.01" value="${m.price}">
+    <button class="mr-del" onclick="this.parentElement.remove()">✕</button>`;
+  host.appendChild(div);
+}
+function readMats(){
+  return [...document.querySelectorAll('#matRows .mat-row')].map(r=>({
+    name:r.querySelector('.mr-name').value.trim(),
+    note:r.querySelector('.mr-note').value.trim()||'—',
+    unit:r.querySelector('.mr-unit').value,
+    base:r.querySelector('.mr-base').value,
+    factor:parseFloat(r.querySelector('.mr-factor').value)||0,
+    price:parseFloat(r.querySelector('.mr-price').value)||0
+  })).filter(m=>m.name);
+}
+function addListRow(hostId,val,ph,multiline){
+  const host=document.getElementById(hostId);
+  const div=document.createElement('div'); div.className='list-row';
+  const field = multiline ? `<textarea class="lr-in" rows="2" placeholder="${esc(ph||'')}">${esc(val||'')}</textarea>` : `<input class="lr-in" value="${esc(val||'')}" placeholder="${esc(ph||'')}">`;
+  div.innerHTML=field+`<button class="mr-del" onclick="this.parentElement.remove()">✕</button>`;
+  host.appendChild(div);
+}
+function readList(hostId){ return [...document.querySelectorAll('#'+hostId+' .lr-in')].map(i=>i.value.trim()).filter(Boolean); }
+
+function editCalc(id){
+  const isNew=!id; const c=isNew?{id:'',path:[],menuLabel:'',name:'',labor:100,dimHint:'',mats:[]}:calcById(id);
+  document.getElementById('editorTitle').textContent=isNew?'Yeni İmalat':'İmalatı Düzenle';
+  document.getElementById('editorDelete').style.display=isNew?'none':'';
+  const tops=[...new Set(DB.calcs.map(x=>x.path&&x.path[0]).filter(Boolean))];
+  const subs=[...new Set(DB.calcs.map(x=>x.path&&x.path[1]).filter(Boolean))];
+  document.getElementById('editorBody').innerHTML=`
+    <div class="ed-row c2">
+      <div class="ed-field"><label>Menü Etiketi (kısa)</label><input type="text" id="cf-menu" value="${esc(c.menuLabel)}" placeholder="Örn: Karolam Asma Tavan"></div>
+      <div class="ed-field"><label>Tam Ad (başlık)</label><input type="text" id="cf-name" value="${esc(c.name)}" placeholder="Örn: Karolam Asma Tavan (60x60)"></div>
+    </div>
+    <div class="ed-row c2">
+      <div class="ed-field"><label>Ana Kategori (opsiyonel)</label><input type="text" id="cf-p0" list="dl-tops" value="${esc(c.path[0]||'')}" placeholder="Boş = üst seviye"><datalist id="dl-tops">${tops.map(t=>`<option value="${esc(t)}">`).join('')}</datalist></div>
+      <div class="ed-field"><label>Alt Kategori (opsiyonel)</label><input type="text" id="cf-p1" list="dl-subs" value="${esc(c.path[1]||'')}" placeholder="Boş = tek seviye"><datalist id="dl-subs">${subs.map(t=>`<option value="${esc(t)}">`).join('')}</datalist></div>
+    </div>
+    <div class="ed-row c2">
+      <div class="ed-field"><label>İşçilik (₺/m²)</label><input type="number" id="cf-labor" value="${c.labor}" step="1"></div>
+      <div class="ed-field"><label>Ölçü İpucu (opsiyonel)</label><input type="text" id="cf-hint" value="${esc(c.dimHint||'')}" placeholder="Örn: En = Uzunluk, Boy = Yükseklik"></div>
+    </div>
+    <div class="ed-sec">Malzeme Analizi</div>
+    <div class="mat-head"><span>Malzeme</span><span>Not</span><span>Birim</span><span>Baz</span><span>Sarfiyat</span><span>Fiyat</span><span></span></div>
+    <div id="matRows"></div>
+    <button class="add-row" onclick="addMatRow()">+ Malzeme Ekle</button>`;
+  const host=document.getElementById('matRows'); c.mats.forEach(m=>addMatRow(m)); if(!c.mats.length){addMatRow();addMatRow();}
+  _del = isNew?null:()=>delCalc(id,true);
+  _save = ()=>{
+    const menu=document.getElementById('cf-menu').value.trim(), name=document.getElementById('cf-name').value.trim();
+    if(!menu){ alert('Menü etiketi zorunlu.'); return; }
+    const p0=document.getElementById('cf-p0').value.trim(), p1=document.getElementById('cf-p1').value.trim();
+    const path=[p0,p1].filter(Boolean);
+    const mats=readMats(); if(!mats.length){ alert('En az bir malzeme ekleyin.'); return; }
+    const obj={ id:isNew?uniqueId(slug(menu),x=>DB.calcs.some(c=>c.id===x)):id, path, menuLabel:menu, name:name||menu, labor:parseFloat(document.getElementById('cf-labor').value)||0, dimHint:document.getElementById('cf-hint').value.trim(), mats };
+    if(isNew) DB.calcs.push(obj); else { const idx=DB.calcs.findIndex(c=>c.id===id); DB.calcs[idx]=obj; }
+    saveDB(); closeEditor(); rebuildAll();
+  };
+  document.getElementById('editor').classList.add('show');
+}
+function delCalc(id,fromEditor){
+  const c=calcById(id); if(!c)return;
+  const used=DB.articles.filter(a=>a.calc===id).map(a=>a.title);
+  let msg='"'+c.menuLabel+'" imalatını silmek istiyor musunuz?';
+  if(used.length) msg+='\n\nUyarı: Şu makaleler bu imalata bağlı: '+used.join(', ')+'. Bağlantıları kaldırılacak.';
+  if(!confirm(msg))return;
+  DB.calcs=DB.calcs.filter(x=>x.id!==id);
+  DB.articles.forEach(a=>{ if(a.calc===id)a.calc=''; });
+  if(current&&current.id===id)current=null;
+  saveDB(); if(fromEditor)closeEditor(); rebuildAll();
+}
+
+function editArticle(id){
+  const isNew=!id; const a=isNew?{id:'',cat:'',calc:'',title:'',excerpt:'',lead:'',extra:'',intro:'',steps:[],tips:[],tools:[]}:DB.articles.find(x=>x.id===id);
+  document.getElementById('editorTitle').textContent=isNew?'Yeni Makale':'Makaleyi Düzenle';
+  document.getElementById('editorDelete').style.display=isNew?'none':'';
+  const cats=[...new Set(DB.articles.map(x=>x.cat).filter(Boolean))];
+  const calcOpts=DB.calcs.map(c=>`<option value="${c.id}" ${c.id===a.calc?'selected':''}>${esc(c.name)}</option>`).join('');
+  document.getElementById('editorBody').innerHTML=`
+    <div class="ed-row c2">
+      <div class="ed-field"><label>Kategori</label><input type="text" id="af-cat" list="dl-acats" value="${esc(a.cat)}" placeholder="Örn: Asma Tavan"><datalist id="dl-acats">${cats.map(t=>`<option value="${esc(t)}">`).join('')}</datalist></div>
+      <div class="ed-field"><label>İlgili İmalat (maliyet bağlantısı)</label><select id="af-calc"><option value="">— Bağlantı yok —</option>${calcOpts}</select></div>
+    </div>
+    <div class="ed-field"><label>Başlık</label><input type="text" id="af-title" value="${esc(a.title)}"></div>
+    <div class="ed-field"><label>Kart Özeti (kısa)</label><textarea id="af-excerpt">${esc(a.excerpt)}</textarea></div>
+    <div class="ed-field"><label>Giriş / Lead (okuyucuya hitap)</label><textarea id="af-lead" rows="3">${esc(a.lead)}</textarea></div>
+    <div class="ed-field"><label>Rehber Girişi (kısa tanım)</label><textarea id="af-intro">${esc(a.intro)}</textarea></div>
+    <div class="ed-field"><label>Ek Not (opsiyonel, HTML olabilir)</label><textarea id="af-extra" placeholder='Örn: &lt;div class="g-note"&gt;...&lt;/div&gt;'>${esc(a.extra||'')}</textarea></div>
+    <div class="ed-sec">Uygulama Adımları</div><div id="stepRows"></div><button class="add-row" onclick="addListRow('stepRows','','Adım açıklaması (kalın için &lt;b&gt;...&lt;/b&gt;)',true)">+ Adım Ekle</button>
+    <div class="ed-sec">Püf Noktaları</div><div id="tipRows"></div><button class="add-row" onclick="addListRow('tipRows','','Püf noktası',true)">+ Püf Noktası Ekle</button>
+    <div class="ed-sec">Gerekli Ekipman</div><div id="toolRows"></div><button class="add-row" onclick="addListRow('toolRows','','Ekipman adı',false)">+ Ekipman Ekle</button>`;
+  (a.steps||[]).forEach(s=>addListRow('stepRows',s,'',true)); if(!(a.steps||[]).length)addListRow('stepRows','','',true);
+  (a.tips||[]).forEach(s=>addListRow('tipRows',s,'',true)); if(!(a.tips||[]).length)addListRow('tipRows','','',true);
+  (a.tools||[]).forEach(s=>addListRow('toolRows',s,'',false)); if(!(a.tools||[]).length)addListRow('toolRows','','',false);
+  _del = isNew?null:()=>delArticle(id,true);
+  _save = ()=>{
+    const title=document.getElementById('af-title').value.trim();
+    if(!title){ alert('Başlık zorunlu.'); return; }
+    const obj={
+      id:isNew?uniqueId(slug(title),x=>DB.articles.some(a=>a.id===x)):id,
+      cat:document.getElementById('af-cat').value.trim()||'Genel',
+      calc:document.getElementById('af-calc').value,
+      title, excerpt:document.getElementById('af-excerpt').value.trim(),
+      lead:document.getElementById('af-lead').value.trim(),
+      intro:document.getElementById('af-intro').value.trim(),
+      extra:document.getElementById('af-extra').value.trim(),
+      steps:readList('stepRows'), tips:readList('tipRows'), tools:readList('toolRows')
+    };
+    if(isNew) DB.articles.push(obj); else { const idx=DB.articles.findIndex(a=>a.id===id); DB.articles[idx]=obj; }
+    saveDB(); closeEditor(); rebuildAll();
+  };
+  document.getElementById('editor').classList.add('show');
+}
+function delArticle(id,fromEditor){
+  const a=DB.articles.find(x=>x.id===id); if(!a)return;
+  if(!confirm('"'+a.title+'" makalesini silmek istiyor musunuz?'))return;
+  DB.articles=DB.articles.filter(x=>x.id!==id);
+  saveDB(); if(fromEditor)closeEditor(); rebuildAll();
+}
+
+/* ============ ADMIN: YEDEK & AYAR ============ */
+function exportDB(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='yapi-veri.json'; document.body.appendChild(a); a.click(); a.remove();
+}
+function importDB(input){
+  const f=input.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const d=JSON.parse(r.result); if(!d.calcs||!d.articles)throw 0; DB=d; if(!DB.admin)DB.admin={pass:'admin1234'}; if(!DB.globals)DB.globals=clone(DEFAULT_DB.globals); if(!DB.catColors)DB.catColors=clone(DEFAULT_DB.catColors); saveDB(); rebuildAll(); alert('İçe aktarıldı.'); }catch(e){ alert('Geçersiz veya bozuk dosya.'); } input.value=''; };
+  r.readAsText(f);
+}
+function changePass(){ const v=document.getElementById('apNew').value.trim(); if(!v){alert('Yeni şifre girin.');return;} DB.admin.pass=v; saveDB(); document.getElementById('apNew').value=''; alert('Şifre güncellendi.'); }
+function factoryReset(){ if(!confirm('TÜM içerik, fiyat ve makaleler silinip varsayılana dönecek. Emin misiniz?'))return; try{localStorage.removeItem(LS);}catch(e){} loadDB(); rebuildAll(); alert('Varsayılana sıfırlandı.'); }
+
+/* ============ YENİDEN KURMA ============ */
+function rebuildAll(){
+  buildTree(); buildBlog(); if(isAdmin)buildAdminLists();
+  if(current && !calcById(current.id)){ current=null; document.getElementById('placeholder').style.display=''; document.getElementById('result').classList.remove('show'); document.getElementById('calcTitle').textContent='Metraj'; document.getElementById('crumb').innerHTML='<b>İmalat seçin</b>'; }
+  else if(current){ if(getArea()>0)calculate(); }
+}
+
+/* ============ BAŞLAT ============ */
+document.getElementById('yr').textContent=new Date().getFullYear();
+loadDB(); buildTree(); buildBlog();
+try{ if(sessionStorage.getItem('yapiAdmin')==='1') isAdmin=true; }catch(e){}
+updateLockUI();
+document.getElementById('settings').addEventListener('click',e=>{if(e.target.id==='settings')closeSettings();});
+document.getElementById('login').addEventListener('click',e=>{if(e.target.id==='login')closeLogin();});
+document.getElementById('editor').addEventListener('click',e=>{if(e.target.id==='editor')closeEditor();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSettings();closeLogin();closeEditor();}});
+
+</script>
+</body>
+</html>
