@@ -772,316 +772,1895 @@
 /* ============ VARSAYILAN VERİ ============ */
 const mm=(name,note,unit,base,factor,price)=>({name,note,unit,base,factor,price});
 const DEFAULT_DB={
-  version:2,
-  globals:{cur:'₺',kdv:20,labor:0,whatsapp:'905326118880'},
-  admin:{pass:'admin1234'},
-  catColors:{'Asma Tavan':'#0d7d72','Alçıpan':'#3b6ea5','Sıva & Saten':'#c77d18','Seramik':'#a85298','Mantolama':'#2f9e6f','Su Yalıtımı':'#2b8ca6','Boya':'#cf5148','Duvar':'#8a6d3b'},
-  ads:[],
-  calcs:[
-    {id:'al_clip_30',path:['Metal & Alüminyum Tavan','30x30 Asma Tavan'],menuLabel:'Al. Clip in Asma Tavan',name:'Alüminyum Clip-in Asma Tavan (30x30)',labor:145,mats:[
-      mm('Alüminyum Clip-in Panel','30x30 gizli sistem','adet','area',11.11,42),
-      mm('Clip-in Taşıyıcı Profil','3000 mm','adet','area',0.65,72),
-      mm('Duvar L Kenar Profili','3000 mm','adet','perimeter',0.34,55),
-      mm('Askı Seti','teli + maşa + dübel','set','area',1.00,20)]},
-    {id:'gal_clip_30',path:['Metal & Alüminyum Tavan','30x30 Asma Tavan'],menuLabel:'Gal. Clip in Asma Tavan',name:'Galvaniz Clip-in Asma Tavan (30x30)',labor:140,mats:[
-      mm('Galvaniz Clip-in Panel','30x30 gizli sistem','adet','area',11.11,30),
-      mm('Clip-in Taşıyıcı Profil','3000 mm','adet','area',0.65,72),
-      mm('Duvar L Kenar Profili','3000 mm','adet','perimeter',0.34,55),
-      mm('Askı Seti','teli + maşa + dübel','set','area',1.00,18)]},
-    {id:'al_clip_60',path:['Metal & Alüminyum Tavan','60x60 Asma Tavan'],menuLabel:'Al. Clip in Asma Tavan',name:'Alüminyum Clip-in Asma Tavan (60x60)',labor:135,mats:[
-      mm('Alüminyum Clip-in Panel','60x60 gizli sistem','adet','area',2.78,165),
-      mm('Clip-in Taşıyıcı Profil','3000 mm','adet','area',0.55,72),
-      mm('Duvar L Kenar Profili','3000 mm','adet','perimeter',0.34,55),
-      mm('Askı Seti','teli + maşa + dübel','set','area',0.90,20)]},
-    {id:'gal_clip_60',path:['Metal & Alüminyum Tavan','60x60 Asma Tavan'],menuLabel:'Gal. Clip in Asma Tavan',name:'Galvaniz Clip-in Asma Tavan (60x60)',labor:130,mats:[
-      mm('Galvaniz Clip-in Panel','60x60 gizli sistem','adet','area',2.78,120),
-      mm('Clip-in Taşıyıcı Profil','3000 mm','adet','area',0.55,72),
-      mm('Duvar L Kenar Profili','3000 mm','adet','perimeter',0.34,55),
-      mm('Askı Seti','teli + maşa + dübel','set','area',0.90,18)]},
-    {id:'karolam_60',path:['Metal & Alüminyum Tavan','60x60 Asma Tavan'],menuLabel:'Karolam Asma Tavan',name:'Karolam Asma Tavan (60x60)',labor:110,mats:[
-      mm('Karolam Tavan Plakası','60x60 lay-in','adet','area',2.78,95),
-      mm('Ana Taşıyıcı T24','3660 mm','adet','area',0.23,95),
-      mm('Tali Taşıyıcı T24','1200 mm','adet','area',1.40,40),
-      mm('Tali Taşıyıcı T24','600 mm','adet','area',1.67,22),
-      mm('Duvar L Kenar Profili','3000 mm','adet','perimeter',0.34,55),
-      mm('Askı Seti','teli + klips + dübel','set','area',0.90,18)]},
-    {id:'tasyunu_60',path:['Metal & Alüminyum Tavan','60x60 Asma Tavan'],menuLabel:'Taşyünü Asma Tavan',name:'Taşyünü Asma Tavan (60x60)',labor:115,mats:[
-      mm('Taşyünü Tavan Plakası','60x60 lay-in','adet','area',2.78,165),
-      mm('Ana Taşıyıcı T24','3660 mm','adet','area',0.23,95),
-      mm('Tali Taşıyıcı T24','1200 mm','adet','area',1.40,40),
-      mm('Tali Taşıyıcı T24','600 mm','adet','area',1.67,22),
-      mm('Duvar L Kenar Profili','3000 mm','adet','perimeter',0.34,55),
-      mm('Askı Seti','teli + klips + dübel','set','area',0.90,18)]},
-    {id:'alcipan_agrafli',path:['Alçıpan Duvar & Tavan','Alçıpan Asma Tavan'],menuLabel:'Agraflı',name:'Alçıpan Asma Tavan — Agraflı',labor:125,mats:[
-      mm('Alçıpan Levha 9,5 mm','120x200 cm','adet','area',0.47,190),
-      mm('TC60 Tavan C Profili','3000 mm','adet','area',0.30,68),
-      mm('TU28 Duvar U Profili','3000 mm','adet','perimeter',0.34,45),
-      mm('Agraf (Bağlantı Elemanı)','—','adet','area',2.20,9),
-      mm('Dübel + Vida (agraf)','—','adet','area',2.20,2.5),
-      mm('Alçıpan Vidası 25 mm','—','adet','area',23,0.6),
-      mm('Derz Bandı','file/kağıt','mt','area',1.6,3),
-      mm('Derz / Saten Alçı','—','kg','area',0.55,13)]},
-    {id:'alcipan_askili',path:['Alçıpan Duvar & Tavan','Alçıpan Asma Tavan'],menuLabel:'Askı Çubuklu',name:'Alçıpan Asma Tavan — Askı Çubuklu',labor:130,mats:[
-      mm('Alçıpan Levha 9,5 mm','120x200 cm','adet','area',0.47,190),
-      mm('TC60 Tavan C Profili','3000 mm','adet','area',0.30,68),
-      mm('TU28 Duvar U Profili','3000 mm','adet','perimeter',0.34,45),
-      mm('Askı Çubuğu + Ayar Maşası','set','set','area',0.70,24),
-      mm('Dübel + Vida (askı)','—','adet','area',0.70,2.5),
-      mm('Alçıpan Vidası 25 mm','—','adet','area',23,0.6),
-      mm('Derz Bandı','file/kağıt','mt','area',1.6,3),
-      mm('Derz / Saten Alçı','—','kg','area',0.55,13)]},
-    {id:'bolme_cift',path:['Alçıpan Duvar & Tavan','Alçıpan Bölme Duvar'],menuLabel:'Çift Kat Alçıpan',name:'Alçıpan Bölme Duvar — Çift Kat',labor:180,dimHint:'En = Uzunluk, Boy = Yükseklik',mats:[
-      mm('Alçıpan Levha 12,5 mm','çift yüz çift kat','adet','area',1.85,155),
-      mm('DC75 Dikme Profili','3000 mm','adet','area',0.58,64),
-      mm('DU75 Taban/Tavan Profili','3000 mm','adet','area',0.24,58),
-      mm('Taş Yünü Dolgu 5 cm','ses yalıtımı','m²','area',1.0,95),
-      mm('Alçıpan Vidası 25/35 mm','—','adet','area',46,0.65),
-      mm('Derz Bandı','—','mt','area',2.2,3),
-      mm('Derz / Saten Alçı','—','kg','area',0.80,13),
-      mm('Dübel + Vida','profil sabitleme','adet','perimeter',3.0,2.5)]},
-    {id:'bolme_tek',path:['Alçıpan Duvar & Tavan','Alçıpan Bölme Duvar'],menuLabel:'Tek Kat Alçıpan',name:'Alçıpan Bölme Duvar — Tek Kat',labor:150,dimHint:'En = Uzunluk, Boy = Yükseklik',mats:[
-      mm('Alçıpan Levha 12,5 mm','çift yüz tek kat','adet','area',0.90,155),
-      mm('DC75 Dikme Profili','3000 mm','adet','area',0.58,64),
-      mm('DU75 Taban/Tavan Profili','3000 mm','adet','area',0.24,58),
-      mm('Alçıpan Vidası 25 mm','—','adet','area',29,0.6),
-      mm('Derz Bandı','—','mt','area',2.2,3),
-      mm('Derz / Saten Alçı','—','kg','area',0.70,13),
-      mm('Dübel + Vida','profil sabitleme','adet','perimeter',3.0,2.5)]},
-    {id:'giydirme_cift',path:['Alçıpan Duvar & Tavan','Alçıpan Giydirme Duvar'],menuLabel:'Çift Kat Alçıpan',name:'Alçıpan Giydirme Duvar — Çift Kat',labor:140,dimHint:'En = Uzunluk, Boy = Yükseklik',mats:[
-      mm('Alçıpan Levha 12,5 mm','tek yüz çift kat','adet','area',0.94,155),
-      mm('DU/DC Profil veya Agraf','3000 mm','adet','area',0.55,60),
-      mm('Alçıpan Vidası 25/35 mm','—','adet','area',24,0.6),
-      mm('Derz Bandı','—','mt','area',1.2,3),
-      mm('Derz / Saten Alçı','—','kg','area',0.55,13),
-      mm('Dübel + Vida','duvar sabitleme','adet','area',1.6,2.5)]},
-    {id:'giydirme_tek',path:['Alçıpan Duvar & Tavan','Alçıpan Giydirme Duvar'],menuLabel:'Tek Kat Alçıpan',name:'Alçıpan Giydirme Duvar — Tek Kat',labor:120,dimHint:'En = Uzunluk, Boy = Yükseklik',mats:[
-      mm('Alçıpan Levha 12,5 mm','tek yüz tek kat','adet','area',0.47,155),
-      mm('DU/DC Profil veya Agraf','3000 mm','adet','area',0.55,60),
-      mm('Alçıpan Vidası 25 mm','—','adet','area',15,0.6),
-      mm('Derz Bandı','—','mt','area',1.2,3),
-      mm('Derz / Saten Alçı','—','kg','area',0.50,13),
-      mm('Dübel + Vida','duvar sabitleme','adet','area',1.6,2.5)]},
-    {id:'alci_siva',path:[],menuLabel:'Alçı Sıva ve Saten',name:'Alçı Sıva ve Saten',labor:90,mats:[
-      mm('Makine / Kaba Sıva Alçısı','~1 cm','kg','area',10,7.5),
-      mm('Saten Perdah Alçısı','—','kg','area',2,9),
-      mm('Yüzey Astarı','—','kg','area',0.15,40),
-      mm('Galvaniz Köşe Profili','—','mt','perimeter',0.4,8)]},
-    {id:'kara_siva',path:[],menuLabel:'Dış & İç Cephe Kara Sıva',name:'Dış & İç Cephe Kara Sıva',labor:100,mats:[
-      mm('Hazır Kara Sıva Harcı','~2 cm','kg','area',20,5),
-      mm('Sıva Filesi','dış cephe','m²','area',1.05,12),
-      mm('Sıva Köşe Profili','—','mt','perimeter',0.4,8)]},
-    {id:'seramik',path:[],menuLabel:'Seramik Yapıştırıcı & Derz',name:'Seramik Yapıştırıcı & Derz',labor:130,mats:[
-      mm('Seramik Yapıştırıcısı','—','kg','area',5,8),
-      mm('Derz Dolgu Malzemesi','—','kg','area',0.5,22),
-      mm('Fayans Çarpı / Plus','—','adet','area',3,0.5)]},
-    {id:'manto_eps',path:['Dış Cephe Mantolama'],menuLabel:'EPS Karbonlu',name:'Dış Cephe Mantolama — EPS Karbonlu',labor:150,mats:[
-      mm('EPS Karbonlu Levha 5 cm','—','m²','area',1.05,92),
-      mm('Yapıştırıcı Harç','—','kg','area',6,8.5),
-      mm('Donatı Filesi','160 gr','m²','area',1.1,12),
-      mm('Mantolama Dübeli','—','adet','area',6,4),
-      mm('Köşe / Damlalık Profili','—','mt','perimeter',0.5,10),
-      mm('Sıva Harcı (2. kat)','—','kg','area',4,8),
-      mm('Dekoratif Astar','—','kg','area',0.25,45),
-      mm('Dekoratif Kaplama','1,5 mm','kg','area',3,32)]},
-    {id:'manto_tasyunu',path:['Dış Cephe Mantolama'],menuLabel:'Taşyünü',name:'Dış Cephe Mantolama — Taşyünü',labor:165,mats:[
-      mm('Taşyünü Levha 5 cm','—','m²','area',1.05,168),
-      mm('Yapıştırıcı Harç','—','kg','area',7,8.5),
-      mm('Donatı Filesi','160 gr','m²','area',1.1,12),
-      mm('Mantolama Dübeli (metal)','—','adet','area',8,6),
-      mm('Köşe / Damlalık Profili','—','mt','perimeter',0.5,10),
-      mm('Sıva Harcı (2. kat)','—','kg','area',5,8),
-      mm('Dekoratif Astar','—','kg','area',0.25,45),
-      mm('Dekoratif Kaplama','1,5 mm','kg','area',3,32)]},
-    {id:'su_tam',path:['Su Yalıtım'],menuLabel:'Tam Elastik Sürme İzolasyon',name:'Tam Elastik Sürme İzolasyon',labor:85,mats:[
-      mm('Tam Elastik Su Yalıtım Malz.','2 bileşenli, 2 kat','kg','area',3.5,68),
-      mm('Astar','—','kg','area',0.25,42),
-      mm('Köşe Bandı / File','—','mt','perimeter',1.0,7)]},
-    {id:'su_yari',path:['Su Yalıtım'],menuLabel:'Yarı Elastik Sürme İzolasyon',name:'Yarı Elastik Sürme İzolasyon',labor:80,mats:[
-      mm('Yarı Elastik Su Yalıtım Malz.','2 kat','kg','area',3.0,52),
-      mm('Astar','—','kg','area',0.25,42),
-      mm('Köşe Bandı / File','—','mt','perimeter',1.0,7)]},
-    {id:'su_negatif',path:['Su Yalıtım'],menuLabel:'Negatif (İç Cephe) İzolasyon',name:'Negatif (İç Cephe) İzolasyon',labor:90,mats:[
-      mm('Kristalize Negatif Yalıtım Harcı','—','kg','area',3.5,60),
-      mm('Yüzey Doyurma / Astar','—','kg','area',0.30,35),
-      mm('Kılcal Tamir Harcı','—','kg','area',0.5,40)]},
-    {id:'su_pozitif',path:['Su Yalıtım'],menuLabel:'Pozitif (Dış Cephe) İzolasyon',name:'Pozitif (Dış Cephe) İzolasyon',labor:85,mats:[
-      mm('Sürme Esaslı Pozitif Yalıtım','—','kg','area',3.2,55),
-      mm('Astar','—','kg','area',0.25,42),
-      mm('Donatı Filesi','—','m²','area',1.05,10),
-      mm('Köşe Bandı','—','mt','perimeter',1.0,7)]},
-    {id:'boya_ic',path:['Dış ve İç Cephe Boya'],menuLabel:'İç Cephe Boya',name:'İç Cephe Boya',labor:60,mats:[
-      mm('İç Cephe Boyası','silikonlu, 2 kat','lt','area',0.25,45),
-      mm('İç Cephe Astarı','—','lt','area',0.15,38),
-      mm('Alçı / Saten Macun (tamir)','—','kg','area',0.4,14),
-      mm('Zımpara + Maskeleme Bandı','sarf','set','area',0.05,30)]},
-    {id:'boya_dis',path:['Dış ve İç Cephe Boya'],menuLabel:'Dış Cephe Boya',name:'Dış Cephe Boya',labor:75,mats:[
-      mm('Dış Cephe Boyası','silikonlu, 2 kat','lt','area',0.28,55),
-      mm('Dış Cephe Astarı','—','lt','area',0.18,48),
-      mm('Dolgu / Tamir Harcı','—','kg','area',0.3,18)]},
-    {id:'boya_cizgi',path:['Dış ve İç Cephe Boya'],menuLabel:'Otopark ve Yol Çizgi Boyası',name:'Otopark ve Yol Çizgi Boyası',labor:70,dimHint:'Alan = boyanacak çizgi alanı',mats:[
-      mm('Trafik / Yol Çizgi Boyası','—','kg','area',0.6,90),
-      mm('İnceltici / Tiner','—','lt','area',0.1,55),
-      mm('Maskeleme Bandı','—','mt','perimeter',2.0,4)]},
-    {id:'gazbeton',path:[],menuLabel:'Gaz Beton Duvar',name:'Gaz Beton Duvar',labor:110,dimHint:'En = Uzunluk, Boy = Yükseklik',mats:[
-      mm('Gaz Beton Blok','60x25x20 cm','adet','area',6.67,65),
-      mm('Gaz Beton Yapıştırma Harcı','—','kg','area',5,9)]},
-    {id:'tugla',path:[],menuLabel:'Tuğla Duvar',name:'Tuğla Duvar',labor:120,dimHint:'En = Uzunluk, Boy = Yükseklik',mats:[
-      mm('Delikli Tuğla','duvar tuğlası','adet','area',33,4.5),
-      mm('Harç (çimento + kum / hazır)','—','kg','area',25,3)]},
-    {id:'klinker',path:[],menuLabel:'Klinker Tuğla',name:'Klinker Tuğla (Cephe)',labor:180,mats:[
-      mm('Klinker Tuğla','cephe kaplama','adet','area',55,12),
-      mm('Klinker Yapıştırıcısı','—','kg','area',8,14),
-      mm('Klinker Derz Harcı','—','kg','area',4,18)]},
+  "version": 2,
+  "globals": {
+    "cur": "₺",
+    "kdv": 20,
+    "labor": 0,
+    "whatsapp": "905326118880"
+  },
+  "admin": {
+    "pass": "admin1234"
+  },
+  "catColors": {
+    "Asma Tavan": "#0d7d72",
+    "Alçıpan": "#3b6ea5",
+    "Sıva & Saten": "#c77d18",
+    "Seramik": "#a85298",
+    "Mantolama": "#2f9e6f",
+    "Su Yalıtımı": "#2b8ca6",
+    "Boya": "#cf5148",
+    "Duvar": "#8a6d3b"
+  },
+  "ads": [
+    {
+      "img": "data:image/png;base64,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",
+      "link": "",
+      "name": "Belek Mimarlık"
+    }
   ],
-  articles:[
-    {id:'clipin',cat:'Asma Tavan',calc:'al_clip_60',title:'Gizli Sistem (Clip-in) Metal & Alüminyum Asma Tavan',
-      excerpt:'Sökülebilir, temiz görünümlü, ıslak hacme dayanıklı gizli taşıyıcılı tavan sisteminin kuruluşu.',
-      lead:'Koridor, ıslak hacim ve cephe saçaklarında hem şık hem de bakımı kolay bir tavan mı arıyorsunuz? Panelleri alttan bastırmalı (clip-in) gizli sistem, taşıyıcıları göstermeden düz bir yüzey verir ve tek panel sökülerek üstteki tesisata ulaşılabilir. Aşağıda kot almadan panel montajına kadar tüm akışı bulacaksınız.',
-      extra:'',
-      intro:'Gizli taşıyıcılı, panelleri alttan bastırmalı (clip-in) sistemle geçen, sökülebilir metal/alüminyum asma tavan. Islak hacim, koridor ve cephe saçaklarında tercih edilir.',
-      steps:['<b>Kot ve şakül:</b> Bitmiş tavan kotunu lazer/hortum terazi ile duvara işaretleyip çevre hattını çekin.','<b>Kenar profili:</b> Duvar L (kenar) profilini kot çizgisine 30–40 cm aralıkla dübel-vida ile sabitleyin.','<b>Askı düzeni:</b> Ana taşıyıcı hattına 80–100 cm aralıkla askı çubuğu/telini tavana dübelleyin.','<b>Taşıyıcı montajı:</b> Clip-in taşıyıcıları panel modülüne (30x30/60x60) göre askılara asıp terazisini alın.','<b>Panel takma:</b> Panelleri taşıyıcıya alttan bastırarak klipsleyin; kenarlarda ölçüsünde kesin.','<b>Kontrol:</b> Fuga hizası ve terazisini kontrol edip gerekli ayarı maşadan yapın.'],
-      tips:['Alüminyum panellerde parmak izine karşı eldivenle çalışın; koruyucu filmi montaj sonrası soyun.','Islak hacimde galvaniz yerine alüminyum panel korozyona daha dayanıklıdır.','Panel kesiminde giyotin/el makası kullanın; taşlama çapak ve ısı izi bırakır.'],
-      tools:['Lazer distomat','Su terazisi','Vidalama','Kenar makası','Matkap']},
-    {id:'layin',cat:'Asma Tavan',calc:'karolam_60',title:'Taşıyıcılı (Lay-in) Asma Tavan: Karolam ve Taşyünü',
-      excerpt:'Ofis ve mağazaların klasiği: 60x60 plakaların T24 ızgaraya oturtulduğu en pratik sistem.',
-      lead:'En yaygın asma tavan sistemi lay-in ızgaradır: açık T24 taşıyıcı bir ızgara kurulur, 60x60 karolam veya taşyünü plakalar gözlere üstten oturtulur. Hızlı kurulur, kolay sökülür, aydınlatma ve havalandırma entegrasyonu kolaydır. İşte doğru terazide bir tavan için adımlar.',
-      extra:'',
-      intro:'T24 gövdeli açık taşıyıcı ızgaraya 60x60 plakaların üstten oturtulduğu, en yaygın ofis/mağaza asma tavan sistemi (karolam, taşyünü, mineral).',
-      steps:['<b>Kot işaretleme:</b> Bitmiş tavan kotunu çevre duvarlara lazerle aktarın.','<b>Kenar L profili:</b> Kot çizgisine 40 cm aralıkla dübel-vida ile çakın.','<b>Askılar:</b> Ana taşıyıcı hattına 90–120 cm arayla askı teli ve klipsi tavana sabitleyin.','<b>Ana taşıyıcı:</b> 3660 mm ana T profilleri 1200 mm aksla asıp terazi alın.','<b>Tali taşıyıcı:</b> 1200 ve 600 mm tali profilleri geçirerek 600x600 gözleri oluşturun.','<b>Plaka yerleştirme:</b> Plakaları gözlere üstten oturtun; kenarları ölçüsünde kesin.'],
-      tips:['Izgara diklik/gönyesini köşegen ölçerek kontrol edin; kayma fugaları bozar.','Taşyünü plakalar nemden etkilenir; depolama ve montajda kuru tutun.','Aydınlatma/anemostat için plakayı montajdan önce kesip yerleştirin.'],
-      tools:['Lazer','Su terazisi','Kenar makası','Maket bıçağı','Vidalama']},
-    {id:'alcipanTavanAgraf',cat:'Alçıpan',calc:'alcipan_agrafli',title:'Agraflı Alçıpan Asma Tavan',
-      excerpt:'Kot farkı azken hızlı çözüm: tavana agrafla doğrudan bağlanan düşük sarkımlı alçıpan tavan.',
-      lead:'Mevcut tavanla yeni tavan arasında az boşluk varsa, askı çubuklarıyla uğraşmadan agraf (braket) ile doğrudan bağlanan sistem idealdir. Düşük sarkım, hızlı montaj. Tesisat için derin boşluk gerekmiyorsa en ekonomik alçıpan tavan çözümüdür.',
-      extra:'',
-      intro:'Mevcut tavana agraf (askı braketi) ile doğrudan bağlanan, düşük sarkımlı alçıpan asma tavan. Kot farkı azsa tercih edilir.',
-      steps:['<b>Kot ve hat:</b> Çevre kotunu işaretleyip TU28 duvar U profilini duvara çakın.','<b>Agraf montajı:</b> Tavana 60–80 cm aralıkla agrafları dübel-vida ile sabitleyin.','<b>TC60 profil:</b> Tavan C profillerini agraflara geçirip 40 cm aksla terazisinde kurun.','<b>Levha kaplama:</b> 9,5 mm alçıpanı şaşırtmalı derzle 25 mm vida ile 17–20 cm aralıkla vidalayın.','<b>Derz:</b> Derz bandını çekip saten/derz alçısı ile 2–3 pasoda dolgu yapın.','<b>Zımpara:</b> Kuruyan yüzeyi zımparalayıp boyaya hazır hale getirin.'],
-      tips:['Tesisat için yeterli boşluk yoksa agraf yerine askı çubuklu sisteme geçin.','Vida başını kağıdı yırtmadan hafif gömün; aksi halde alçı tutmaz.','Derz alçısını fazla sulandırmayın, çatlama yapar.'],
-      tools:['Lazer','Vidalama','Spatula/mala','Zımpara','Maket bıçağı']},
-    {id:'alcipanTavanAski',cat:'Alçıpan',calc:'alcipan_askili',title:'Askı Çubuklu Alçıpan Asma Tavan',
-      excerpt:'Tesisat boşluğu ve büyük kot farkları için ayarlı askı çubuklu alçıpan tavan.',
-      lead:'Tavan arasından havalandırma, tesisat veya spot aydınlatma geçecekse yeterli boşluğa ihtiyacınız var. Askı çubuğu + ayar maşası sistemi, tavanı istediğiniz kotta ve tam terazisinde asmanıza imkân verir. Adımları ve maşa ayarının püf noktalarını aşağıda topladık.',
-      extra:'',
-      intro:'Askı çubuğu + ayar maşası ile tavandan istenen kotta asılan alçıpan tavan. Tesisat boşluğu ve büyük kot farkları için uygundur.',
-      steps:['<b>Kot ve hat:</b> Çevre kotunu işaretleyip TU28 duvar U profilini çakın.','<b>Askı düzeni:</b> Tavana 90 cm aksla askı çubuklarını dübelleyip ayar maşalarını takın.','<b>TC60 profil:</b> Tavan C profillerini maşalara geçirip 40 cm aksla terazi alın.','<b>Levha kaplama:</b> 9,5 mm alçıpanı şaşırtmalı derzle 25 mm vida ile kaplayın.','<b>Derz:</b> Derz bandı + saten alçısı ile 2–3 pasoda kapatın.','<b>Zımpara:</b> Yüzeyi zımparalayıp boyaya hazırlayın.'],
-      tips:['Maşa ayarıyla terazisini montaj bitmeden alın; sonradan zordur.','Ağır aydınlatma için ilave askı takviyesi yapın.','Büyük tavanlarda dilatasyon (genleşme) derzi bırakın.'],
-      tools:['Lazer','Vidalama','Maşa/pense','Spatula','Zımpara']},
-    {id:'bolme',cat:'Alçıpan',calc:'bolme_tek',title:'Alçıpan Bölme Duvar: Tek Kat mı, Çift Kat mı?',
-      excerpt:'İskelet + çift yüz kaplama + yalıtım ile hızlı, hafif ayırma duvarı; ses ve yangın seçenekleriyle.',
-      lead:'Mekânı bölmek için tuğla örmeye gerek yok. DC/DU profil iskelet üzerine iki yüzü alçıpanla kaplanan bölme duvar, hafif ve hızlıdır. Tek kat ekonomiktir; çift kat kaplama ve taş yünü dolgu ise ses ve yangın dayanımını belirgin artırır. Hangisini seçeceğinize karar verirken şu akışı izleyin.',
-      extra:'<div class="g-note"><b>Tek kat mı, çift kat mı?</b> Tek kat hızlı ve ekonomiktir, ofis ayırma duvarlarında yeterlidir. Çift kat kaplama + taş yünü dolgu, otel/hastane gibi ses ve yangın gerektiren yerlerde tercih edilir.</div>',
-      intro:'DC/DU profil iskelet üzerine iki yüzü alçıpanla kaplanan, içi yalıtım dolgulu ayırma duvarı. Tek kat/çift kat ve yalıtım ses/yangın performansını belirler.',
-      steps:['<b>Aks çizimi:</b> Duvar hattını yerde ve tavanda şakülle karşılıklı işaretleyin.','<b>Taban/tavan profili:</b> DU75 profilleri ses bandı üstüne 60 cm aksla dübelleyin.','<b>Dikmeler:</b> DC75 dikmeleri 40–60 cm aksla U profillere geçirin.','<b>Tek yüz kaplama:</b> Bir yüzü 12,5 mm alçıpanla 25 cm vida aralığıyla vidalayın.','<b>Yalıtım + tesisat:</b> Taş yünü dolguyu yerleştirip elektrik/tesisatı geçirin.','<b>İkinci yüz + derz:</b> Diğer yüzü kaplayıp derz bandı ve alçı ile kapatın.'],
-      tips:['Çift kat kaplama ses ve yangın dayanımını belirgin artırır.','Islak hacim yüzünde yeşil (suya dayanıklı) alçıpan kullanın.','Profil-döşeme arasına ses bandı koyarsanız darbe sesi azalır.'],
-      tools:['Lazer/şakül','Vidalama','Kenar makası','Maket bıçağı','Spatula']},
-    {id:'giydirme',cat:'Alçıpan',calc:'giydirme_tek',title:'Alçıpan Giydirme Duvar ile Yüzey İyileştirme',
-      excerpt:'Bozuk, nemli veya soğuk duvarların önüne tek yüz kaplama ile düzgün, yalıtımlı yüzey.',
-      lead:'Eski, dalgalı ya da soğuk bir duvarı sıvayla düzeltmek yerine önüne alçıpan giydirmek çoğu zaman daha hızlı ve temiz sonuç verir. Profil arasına yalıtım koyarak ısı/ses konforu da kazandırır. Rutubet varsa önce alınması gereken önlemleri de anlattık.',
-      extra:'',
-      intro:'Mevcut duvarın önüne tek yüz alçıpan kaplayarak düzgün/yalıtımlı yüzey elde etme. Nemli, bozuk veya soğuk duvarların iyileştirilmesinde kullanılır.',
-      steps:['<b>Yüzey hazırlığı:</b> Gevşek sıvayı temizleyin, kaba düzensizlikleri alın.','<b>Taşıyıcı:</b> DU/DC profil veya agrafları 40–60 cm aksla sabitleyin (ya da yapıştırma alçısıyla).','<b>Levha kaplama:</b> 12,5 mm alçıpanı tek yüz vidalayın; çift kat isteniyorsa şaşırtmalı ikinci kat.','<b>Yalıtım (ops.):</b> Profil arası boşluğa levha yalıtım koyabilirsiniz.','<b>Derz:</b> Derz bandı + alçı ile birleşimleri kapatın.','<b>Zımpara:</b> Yüzeyi zımparalayıp boyaya hazırlayın.'],
-      tips:['Rutubetli duvarda önce nem bariyeri/su yalıtımı değerlendirin.','Yapıştırma alçısı yöntemi profilsiz ve hızlıdır ama zeminde boşluk bırakır.','Priz/anahtar kutularını levha öncesi işaretleyin.'],
-      tools:['Vidalama','Mala','Kenar makası','Maket bıçağı','Zımpara']},
-    {id:'alciSiva',cat:'Sıva & Saten',calc:'alci_siva',title:'Alçı Sıva ve Saten ile Boyaya Hazır Yüzey',
-      excerpt:'İç mekânda kaba alçı + saten perdah ile pürüzsüz, boyaya hazır duvar ve tavan.',
-      lead:'Boyanın güzel durması, altındaki yüzeyin düzgünlüğüne bağlıdır. Kaba alçı sıva ile yüzeyi doğrultup saten perdahla pürüzsüz hale getirmek, iç mekânda en yaygın bitirme yöntemidir. Alçının açık kalma süresini yönetmek işin kalbidir; adımlarda buna dikkat çektik.',
-      extra:'',
-      intro:'İç mekân duvar/tavanlarında kaba alçı sıva + saten perdah ile boyaya hazır düzgün yüzey elde etme.',
-      steps:['<b>Yüzey hazırlığı:</b> Tozu alın, emici yüzeye astar sürün; köşelere galvaniz köşe profili yerleştirin.','<b>Alçı hazırlama:</b> Kaba/makine alçısını su içine serperek topaksız karıp dinlendirin.','<b>Kaba sıva:</b> Mastar ve mala ile ~1 cm çekip yüzeyi mastarlayın.','<b>Perdah:</b> Priz almadan yüzeyi perdahlayın; köşe ve kenarları düzeltin.','<b>Saten:</b> Kuruyan yüzeye ince saten alçısını 1–2 pasoda çekin.','<b>Zımpara:</b> Kuruduktan sonra hafif zımparayla boyaya hazırlayın.'],
-      tips:['Alçının açık kalma (priz) süresine dikkat; fazla harç boşa gider.','Emici yüzeye astar sürmezseniz alçı çabuk kavrar, işlenemez.','Tek seferde çok kalın çekmeyin, çatlar.'],
-      tools:['Mala','Mastar','Perdah malası','Köşe profili','Zımpara']},
-    {id:'karaSiva',cat:'Sıva & Saten',calc:'kara_siva',title:'Dış & İç Cephe Kara Sıva',
-      excerpt:'Mantolama, seramik veya son kat sıva öncesi taşıyıcı çimento esaslı kaba sıva.',
-      lead:'Kara sıva, üzerine gelecek mantolama, seramik veya dekoratif sıvanın oturacağı sağlam zemini oluşturur. Doğru aderans, mastar anoları ve kür yapılmazsa çatlar. Cephede uzun ömür için serpme ve kürü asla atlamayın; nedenini adımlarda açıkladık.',
-      extra:'',
-      intro:'Çimento esaslı kaba sıva ile iç/dış cephede taşıyıcı yüzey oluşturma; üstüne mantolama, seramik veya son kat sıva gelebilir.',
-      steps:['<b>Yüzey ıslatma:</b> Tozu alıp yüzeyi nemlendirin; köşe profillerini yerleştirin.','<b>Serpme:</b> Aderans için çimento şerbetiyle ince serpme (şap) yapın.','<b>Mastar anoları:</b> Şakül ve terazide mastar şeritleri oluşturun.','<b>Harç çekme:</b> Kara sıva harcını mala ile ~2 cm çekip mastarlayın.','<b>File (dış cephe):</b> Gerekli yerlerde sıva filesini harç içine gömün.','<b>Perdah/kür:</b> Tahta mala ile perdahlayıp birkaç gün nemli kürleyin.'],
-      tips:['Dış cephede güneş/rüzgârda hızlı kuruma çatlatır; kürü ihmal etmeyin.','Tek pasoda 2 cm’i aşmayın; gerekiyorsa iki katta çekin.','Farklı malzeme (beton–tuğla) geçişlerine file şarttır.'],
-      tools:['Mala','Mastar','Şakül','Köşe profili','Sıva makinesi (ops.)']},
-    {id:'seramik',cat:'Seramik',calc:'seramik',title:'Seramik Yapıştırma ve Derz Uygulaması',
-      excerpt:'Zemin ve duvarda çimento esaslı yapıştırıcıyla düzgün, boşluksuz seramik döşeme.',
-      lead:'Seramiğin uzun ömürlü olması; düz zemin, doğru dişli mala ve boşluksuz yapıştırmayla başlar. Islak hacim ve dış mekânda çift taraflı yapıştırma şarttır. Derzi doğru zamanda temizlemek de yüzey görünümünü belirler. İşte sağlam bir uygulamanın adımları.',
-      extra:'',
-      intro:'Zemin/duvara çimento esaslı yapıştırıcıyla seramik/fayans döşeme ve derz dolgusu.',
-      steps:['<b>Zemin kontrol:</b> Yüzeyin düz, sağlam ve terazisinde olduğunu doğrulayın; gerekirse tesviye şapı.','<b>Yapıştırıcı:</b> Tozu suyla topaksız karıp dinlendirin.','<b>Tarama:</b> Uygun dişli mala ile yapıştırıcıyı tek yönde tarayın.','<b>Döşeme:</b> Seramiği bastırıp hafif kaydırarak oturtun; çarpı/plus ile derz payı verin.','<b>Terazi/hiza:</b> Her karoyu terazi ve hizada kontrol edip fazla harcı silin.','<b>Derz:</b> 24 saat sonra çarpıları alıp derz dolgusunu uygulayın, süngerle temizleyin.'],
-      tips:['Islak hacim ve dış mekânda çift taraflı (sırt + zemin) yapıştırma yapın.','Büyük ebat karolarda dişli mala numarasını büyütün.','Derzi harç tam sertleşmeden temizleyin; yoksa film tabakası kalır.'],
-      tools:['Dişli mala','Karo kesme','Su terazisi','Derz süngeri','Mikser']},
-    {id:'mantolama',cat:'Mantolama',calc:'manto_eps',title:'Dış Cephe Mantolama: EPS ve Taşyünü',
-      excerpt:'Enerji faturasını düşüren, yoğuşmayı önleyen cephe ısı yalıtımının doğru uygulaması.',
-      lead:'Mantolama sadece levha yapıştırmak değildir; su basman profili, doğru dübel sayısı, bindirmeli file ve kür bir bütündür. EPS ekonomik ve hafif, taşyünü ise yangın (A1) ve buhar geçirgenliği açısından üstündür. Hangisini seçerseniz seçin, çatlamayan bir cephe için bu akışı izleyin.',
-      extra:'<div class="g-note"><b>EPS mi, taşyünü mü?</b> EPS daha ekonomik ve uygulaması kolaydır. Taşyünü yanmazdır (A1) ve nefes alır; yüksek binalarda ve yangın gereksinimlerinde tercih edilir, dübeli metal seçilir.</div>',
-      intro:'Cepheye ısı yalıtım levhası + file/sıva + dekoratif kaplama uygulayarak enerji tasarrufu ve nem/yoğuşma kontrolü sağlama.',
-      steps:['<b>Su basman profili:</b> Başlangıç kotuna alüminyum start profilini terazide çakın.','<b>Levha yapıştırma:</b> Yapıştırıcıyı levha sırtına çevre+nokta sürüp şaşırtmalı yapıştırın.','<b>Dübelleme:</b> 24 saat sonra levha başına ~6 (taşyününde ~8) dübel çakın.','<b>Donatı sıvası:</b> İlk kat harcı çekip donatı filesini bindirmeli olarak içine gömün.','<b>Köşe/damlalık:</b> Köşe profili ve denizlik damlalıklarını yerleştirin.','<b>Astar + kaplama:</b> Kuruyan yüzeye astar sürüp dekoratif kaplamayı desenleyerek uygulayın.'],
-      tips:['Filesiz veya az bindirmeli file çatlamaya yol açar.','Taşyünü buhar geçirgenliği yüksek, yangın sınıfı A1; dübeli metal seçin.','Son kat boya/kaplama için sıva tam kürlenmeden uygulama yapmayın.'],
-      tools:['Start profili','Dişli mala','Dübel matkabı','File makası','Mala']},
-    {id:'suYalitim',cat:'Su Yalıtımı',calc:'su_pozitif',title:'Sürme Su Yalıtımı: Pozitif, Negatif, Elastik',
-      excerpt:'Islak hacim, teras ve temellerde su kaçağını durduran sürme membran uygulaması.',
-      lead:'Su nereden geliyor ve hangi yönden bastırıyor? Doğru ürün seçimi buna bağlıdır. Suyla aynı yönde çalışan pozitif, ters yönde çalışan negatif; hareketli çatlaklar için tam elastik, sabit yüzeyler için yarı elastik ürünler kullanılır. Ortak uygulama adımları ve tip seçimini birlikte verdik.',
-      extra:'<div class="g-note"><b>Hangi tipi seçmeli?</b> Teras/açık alan → <b>tam elastik</b>. Sabit yüzey → <b>yarı elastik</b>. Dıştan su basıyor → <b>pozitif</b>. İçten (bodrum/perde) basınç var → <b>negatif</b> (kristalize ürün).</div>',
-      intro:'Sürme esaslı membranla ıslak hacim, teras, temel ve perde duvarlarda su geçişini engelleme. Uygulama yönü (pozitif/negatif) ve elastikiyet ürünü belirler.',
-      steps:['<b>Yüzey hazırlığı:</b> Yüzeyi temizleyip sağlamlaştırın; keskin köşeleri pahlayın, içbükeyleri harçla yuvarlatın.','<b>Astar:</b> Emici yüzeye astar sürüp kurumasını bekleyin.','<b>Detay bandı:</b> Köşe ve süzgeç çevrelerine su yalıtım bandı/file yerleştirin.','<b>1. kat:</b> Malzemeyi fırça/mala ile tek yönde sürün.','<b>2. kat:</b> İlk kat kuruyunca dik yönde ikinci katı uygulayın (toplam sarfiyata dikkat).','<b>Test/koruma:</b> Su testi yapın; üstüne şap/seramik gelecekse koruma süresine uyun.'],
-      tips:['Terasta hareketli çatlaklar için tam elastik ürün seçin.','Negatif (iç) uygulamada su basıncına dayanıklı kristalize ürün kullanın.','Köşe detayları en sık su alan yerdir; bandı ihmal etmeyin.'],
-      tools:['Fırça/rulo','Mala','Karıştırıcı','Su yalıtım bandı']},
-    {id:'boyaIc',cat:'Boya',calc:'boya_ic',title:'İç Cephe Boya',
-      excerpt:'Astar + iki kat boya ile leke geçirmeyen, düzgün iç mekân yüzeyleri.',
-      lead:'İyi bir iç cephe boyası, hazırlıkla başlar: macun, zımpara ve mutlaka astar. Astarı atlamak sarfiyatı artırır ve alttan leke geçirir. Kat aralarını beklemek, iz bırakmayan düzgün bir yüzeyin sırrıdır. İşte temiz bir sonuç için sıralı adımlar.',
-      extra:'',
-      intro:'İç mekân duvar/tavanların astar + son kat boya ile bitirilmesi.',
-      steps:['<b>Hazırlık:</b> Mobilya/zemini örtün; çatlak ve boşlukları macunla doldurun.','<b>Zımpara:</b> Yüzeyi zımparalayıp tozunu alın.','<b>Astar:</b> Emici/leke yapan yüzeye astar sürün.','<b>1. kat:</b> Boyayı köşelerden fırça, geniş alanda rulo ile çekin.','<b>2. kat:</b> Kuruma süresine uyup ikinci katı atın.','<b>Kontrol:</b> Işığa karşı iz/geçiş kontrolü yapıp rötuş atın.'],
-      tips:['Astarsız direkt boya sarfiyatı artırır ve leke geçirir.','Rulo tüy boyunu yüzeye göre seçin (düz duvar için kısa tüy).','Kat aralarını beklemeden ikinci kat iz bırakır.'],
-      tools:['Rulo','Fırça','Macun/spatula','Zımpara','Maskeleme bandı']},
-    {id:'boyaDis',cat:'Boya',calc:'boya_dis',title:'Dış Cephe Boya',
-      excerpt:'Silikon esaslı astar + boya ile hava koşullarına dayanıklı, su itici cephe.',
-      lead:'Dış cephe boyası yağmura, güneşe ve neme karşı ilk savunma hattıdır. Silikonlu ürünler su itmesine rağmen nefes alır. Doğru hava koşulu ve ıslak kenar bırakmadan çalışmak, ek izi olmayan homojen bir cephe için kritiktir.',
-      extra:'',
-      intro:'Dış cephede silikon esaslı astar + boya ile hava koşullarına dayanıklı, su itici yüzey elde etme.',
-      steps:['<b>Yüzey onarımı:</b> Kabaran eski boyayı ve gevşek sıvayı temizleyip çatlakları onarın.','<b>Astar:</b> Dış cephe astarını sürüp kurumasını bekleyin.','<b>Detay:</b> Denizlik/damlalık ve derz detaylarını kontrol edin.','<b>1. kat:</b> Boyayı üstten aşağı, ıslak kenar bırakmadan çekin.','<b>2. kat:</b> Kuruma sonrası ikinci katı uygulayın.','<b>Kontrol:</b> Ek yeri/geçişleri gün ışığında kontrol edin.'],
-      tips:['Doğrudan güneş ve yağmurda uygulama yapmayın.','Silikonlu boya su iticidir ama nefes alır; nemli cephede tercih edin.','Renk tutarlılığı için aynı parti (lot) boyayı karıştırıp kullanın.'],
-      tools:['Rulo','Fırça','İskele/sepet','Astar','Spatula']},
-    {id:'boyaCizgi',cat:'Boya',calc:'boya_cizgi',title:'Otopark ve Yol Çizgi Boyası',
-      excerpt:'Otopark, yol ve depo zeminlerinde kalıcı, net trafik çizgileri ve alan işaretleme.',
-      lead:'Zemin çizgilerinin trafiğe ve aşınmaya dayanması; temiz, kuru zemin ve doğru boya kalınlığına bağlıdır. Şablon ve maskeleme ile keskin kenarlar, ikinci kat ile dayanım elde edilir. İşaretlemeyi kalıcı kılmanın adımlarını topladık.',
-      extra:'',
-      intro:'Otopark, yol ve depo zeminlerinde trafik/çizgi boyasıyla yönlendirme ve alan işaretleme.',
-      steps:['<b>Zemin temizliği:</b> Yüzeyi süpürüp yağ/tozdan arındırın; gerekirse basınçlı yıkayın.','<b>Ölçü/şablon:</b> Çizgi hattını şerit metre ve iple çıkarıp maskeleme bandıyla sınırlayın.','<b>Astar (ops.):</b> Gözenekli zemine astar veya inceltilmiş ilk kat sürün.','<b>Uygulama:</b> Çizgi boyasını fırça, rulo veya çizgi makinesiyle çekin.','<b>2. kat:</b> Trafik yoğun alanda ikinci kat dayanımı artırır.','<b>Kuruma:</b> Bandı boya yaşken alın; trafiği tam kuruyana dek kapatın.'],
-      tips:['Nemli/soğuk zeminde boya tutmaz; kuru ve >10°C’de çalışın.','Yansıtıcı istenirse cam küreyi yaş boyaya serpin.','İnceltmeyi ürün talimatına göre yapın; fazla tiner dayanımı düşürür.'],
-      tools:['Çizgi makinesi/rulo','Maskeleme bandı','Şerit metre','İp','Süpürge']},
-    {id:'gazbeton',cat:'Duvar',calc:'gazbeton',title:'Gaz Beton Duvar Örgüsü',
-      excerpt:'Hafif, yalıtımlı bloklarla ince harç kullanarak hızlı ve düzgün duvar örme.',
-      lead:'Gaz beton; hafifliği, ısı yalıtımı ve hızlı örülmesiyle bölme/dolgu duvarlarda öne çıkar. İnce yapıştırma harcıyla örülür, ama bunun için ilk sıranın terazisi ve blok yüzeyinin düzgünlüğü şarttır. Kalın harç yalıtımı bozar. Doğru örgünün adımları burada.',
-      extra:'',
-      intro:'Hafif, yalıtımlı gaz beton bloklarla ince yapıştırma harcı kullanarak hızlı bölme/dolgu duvar örme.',
-      steps:['<b>İlk sıra:</b> Terazide harç yatağına ilk sırayı özenle örün (duvarın karesi buna bağlı).','<b>Yapıştırma harcı:</b> İnce harcı dişli mala ile yatay ve düşey yüzeye sürün.','<b>Örgü:</b> Blokları şaşırtmalı (yarım blok) dizip lastik tokmakla oturtun.','<b>Terazi kontrol:</b> Her sırada şakül ve terazi kontrolü yapın.','<b>Bağlantı:</b> Gerekli yerlerde lento ve taşıyıcıya kelepçe bağlantısı yapın.','<b>Tesisat:</b> Kanal açma aletiyle tesisat yuvalarını açın.'],
-      tips:['İnce harç için blok yüzeyi düzgün olmalı; çapakları rendeyle alın.','Kalın harçla örmek yalıtımı ve düzgünlüğü bozar.','Kesim için gazbeton testeresi kullanın; hızlı ve düzgün keser.'],
-      tools:['Dişli mala','Lastik tokmak','Gazbeton testeresi','Rende','Su terazisi']},
-    {id:'tugla',cat:'Duvar',calc:'tugla',title:'Tuğla Duvar Örgüsü',
-      excerpt:'Delikli tuğla ve harçla klasik, sağlam bölme/dolgu duvar örgüsünün temelleri.',
-      lead:'Tuğla duvarın düzgün ve sağlam olması; ilk sıranın terazisine, sabit derz kalınlığına ve doğru harç kıvamına bağlıdır. Tuğlayı ıslatmak, harcın erken kurumasını önler. Şaşırtmalı örgü ve düzenli kontrol ile sağlam bir duvar örmenin yolunu anlattık.',
-      extra:'',
-      intro:'Delikli tuğla ve çimento-kum harcıyla klasik bölme/dolgu duvar örgüsü.',
-      steps:['<b>Kuru dizi:</b> İlk sırayı harçsız dizip kapı/pencere paylarını ayarlayın.','<b>Harç:</b> Çimento-kum (ya da hazır) harcını kıvamında hazırlayın.','<b>İlk sıra:</b> Terazi ve şakülle ilk sırayı harç yatağına örün.','<b>Örgü:</b> Tuğlaları şaşırtmalı örüp derz kalınlığını ~1–1,5 cm sabit tutun.','<b>Kontrol:</b> Her 3–4 sırada terazi/şakül ve gönye kontrolü yapın.','<b>Bağlantı/lento:</b> Kolon–duvar bağlantısı ve boşluk üstlerine lento yapın.'],
-      tips:['Tuğlayı örgüden önce ıslatın; kuru tuğla harcın suyunu çeker.','Harç kıvamı önemli; çok sulu harç duvarı oynatır.','Uzun duvarlarda düşey hareket derzi bırakın.'],
-      tools:['Mala','Çekül/şakül','Su terazisi','Tuğla çekici','İp']},
-    {id:'klinker',cat:'Duvar',calc:'klinker',title:'Klinker Tuğla ile Cephe Kaplama',
-      excerpt:'Dekoratif ve dayanıklı klinker kaplamayla düşük bakımlı, uzun ömürlü cephe.',
-      lead:'Klinker; dona, aşınmaya ve renk solmasına dirençli, bakımı düşük bir cephe kaplamasıdır. Sağlam bir sonuç için donaya dayanıklı yapıştırıcı, çift taraflı yapıştırma ve temiz derz doldurma gerekir. Cephenizi yıllarca taşıyacak uygulamanın adımları aşağıda.',
-      extra:'',
-      intro:'İnce klinker tuğlalarla cephe kaplama; dekoratif, dayanıklı ve düşük bakımlı dış yüzey.',
-      steps:['<b>Yüzey hazırlığı:</b> Cepheyi sağlamlaştırıp gerekirse astar/serpme ile aderans verin.','<b>Ölçü/dizilim:</b> Sıra yüksekliği ve derz payını hesaplayıp başlangıç çıtasını terazide sabitleyin.','<b>Yapıştırıcı:</b> Çimento esaslı klinker yapıştırıcısını dişli mala ile sürün.','<b>Döşeme:</b> Klinkerleri şaşırtmalı bastırıp derz payıyla dizin.','<b>Terazi/hiza:</b> Sık sık terazi, gönye ve derz hizasını kontrol edin.','<b>Derz:</b> Yapıştırıcı priz aldıktan sonra klinker derz harcını doldurup düzeltin.'],
-      tips:['Dış mekân olduğu için donma-çözülmeye dayanıklı yapıştırıcı/derz seçin.','Çift taraflı yapıştırma (sırt+yüzey) düşme riskini azaltır.','Derzi yüzeye bulaştırmadan doldurun; klinker yüzeyi temizlemek zordur.'],
-      tools:['Dişli mala','Derz torbası','Su terazisi','Klinker kesme','İp']},
+  "calcs": [
+    {
+      "id": "al_clip_30",
+      "path": [
+        "Metal & Alüminyum Tavan",
+        "30x30 Asma Tavan"
+      ],
+      "menuLabel": "Al. Clip in Asma Tavan",
+      "name": "Alüminyum Clip-in Asma Tavan (30x30)",
+      "labor": 145,
+      "mats": [
+        {
+          "name": "Alüminyum Clip-in Panel",
+          "note": "30x30 gizli sistem",
+          "unit": "adet",
+          "base": "area",
+          "factor": 11.11,
+          "price": 42
+        },
+        {
+          "name": "Clip-in Taşıyıcı Profil",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.65,
+          "price": 72
+        },
+        {
+          "name": "Duvar L Kenar Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "perimeter",
+          "factor": 0.34,
+          "price": 55
+        },
+        {
+          "name": "Askı Seti",
+          "note": "teli + maşa + dübel",
+          "unit": "set",
+          "base": "area",
+          "factor": 1,
+          "price": 20
+        }
+      ]
+    },
+    {
+      "id": "gal_clip_30",
+      "path": [
+        "Metal & Alüminyum Tavan",
+        "30x30 Asma Tavan"
+      ],
+      "menuLabel": "Gal. Clip in Asma Tavan",
+      "name": "Galvaniz Clip-in Asma Tavan (30x30)",
+      "labor": 140,
+      "mats": [
+        {
+          "name": "Galvaniz Clip-in Panel",
+          "note": "30x30 gizli sistem",
+          "unit": "adet",
+          "base": "area",
+          "factor": 11.11,
+          "price": 30
+        },
+        {
+          "name": "Clip-in Taşıyıcı Profil",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.65,
+          "price": 72
+        },
+        {
+          "name": "Duvar L Kenar Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "perimeter",
+          "factor": 0.34,
+          "price": 55
+        },
+        {
+          "name": "Askı Seti",
+          "note": "teli + maşa + dübel",
+          "unit": "set",
+          "base": "area",
+          "factor": 1,
+          "price": 18
+        }
+      ]
+    },
+    {
+      "id": "al_clip_60",
+      "path": [
+        "Metal & Alüminyum Tavan",
+        "60x60 Asma Tavan"
+      ],
+      "menuLabel": "Al. Clip in Asma Tavan",
+      "name": "Alüminyum Clip-in Asma Tavan (60x60)",
+      "labor": 135,
+      "mats": [
+        {
+          "name": "Alüminyum Clip-in Panel",
+          "note": "60x60 gizli sistem",
+          "unit": "adet",
+          "base": "area",
+          "factor": 2.78,
+          "price": 165
+        },
+        {
+          "name": "Clip-in Taşıyıcı Profil",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.55,
+          "price": 72
+        },
+        {
+          "name": "Duvar L Kenar Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "perimeter",
+          "factor": 0.34,
+          "price": 55
+        },
+        {
+          "name": "Askı Seti",
+          "note": "teli + maşa + dübel",
+          "unit": "set",
+          "base": "area",
+          "factor": 0.9,
+          "price": 20
+        }
+      ]
+    },
+    {
+      "id": "gal_clip_60",
+      "path": [
+        "Metal & Alüminyum Tavan",
+        "60x60 Asma Tavan"
+      ],
+      "menuLabel": "Gal. Clip in Asma Tavan",
+      "name": "Galvaniz Clip-in Asma Tavan (60x60)",
+      "labor": 130,
+      "mats": [
+        {
+          "name": "Galvaniz Clip-in Panel",
+          "note": "60x60 gizli sistem",
+          "unit": "adet",
+          "base": "area",
+          "factor": 2.78,
+          "price": 120
+        },
+        {
+          "name": "Clip-in Taşıyıcı Profil",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.55,
+          "price": 72
+        },
+        {
+          "name": "Duvar L Kenar Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "perimeter",
+          "factor": 0.34,
+          "price": 55
+        },
+        {
+          "name": "Askı Seti",
+          "note": "teli + maşa + dübel",
+          "unit": "set",
+          "base": "area",
+          "factor": 0.9,
+          "price": 18
+        }
+      ]
+    },
+    {
+      "id": "karolam_60",
+      "path": [
+        "Metal & Alüminyum Tavan",
+        "60x60 Asma Tavan"
+      ],
+      "menuLabel": "Karolam Asma Tavan",
+      "name": "Karolam Asma Tavan (60x60)",
+      "labor": 110,
+      "mats": [
+        {
+          "name": "Karolam Tavan Plakası",
+          "note": "60x60 lay-in",
+          "unit": "adet",
+          "base": "area",
+          "factor": 2.78,
+          "price": 95
+        },
+        {
+          "name": "Ana Taşıyıcı T24",
+          "note": "3660 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.23,
+          "price": 95
+        },
+        {
+          "name": "Tali Taşıyıcı T24",
+          "note": "1200 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 1.4,
+          "price": 40
+        },
+        {
+          "name": "Tali Taşıyıcı T24",
+          "note": "600 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 1.67,
+          "price": 22
+        },
+        {
+          "name": "Duvar L Kenar Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "perimeter",
+          "factor": 0.34,
+          "price": 55
+        },
+        {
+          "name": "Askı Seti",
+          "note": "teli + klips + dübel",
+          "unit": "set",
+          "base": "area",
+          "factor": 0.9,
+          "price": 18
+        }
+      ]
+    },
+    {
+      "id": "tasyunu_60",
+      "path": [
+        "Metal & Alüminyum Tavan",
+        "60x60 Asma Tavan"
+      ],
+      "menuLabel": "Taşyünü Asma Tavan",
+      "name": "Taşyünü Asma Tavan (60x60)",
+      "labor": 115,
+      "mats": [
+        {
+          "name": "Taşyünü Tavan Plakası",
+          "note": "60x60 lay-in",
+          "unit": "adet",
+          "base": "area",
+          "factor": 2.78,
+          "price": 165
+        },
+        {
+          "name": "Ana Taşıyıcı T24",
+          "note": "3660 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.23,
+          "price": 95
+        },
+        {
+          "name": "Tali Taşıyıcı T24",
+          "note": "1200 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 1.4,
+          "price": 40
+        },
+        {
+          "name": "Tali Taşıyıcı T24",
+          "note": "600 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 1.67,
+          "price": 22
+        },
+        {
+          "name": "Duvar L Kenar Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "perimeter",
+          "factor": 0.34,
+          "price": 55
+        },
+        {
+          "name": "Askı Seti",
+          "note": "teli + klips + dübel",
+          "unit": "set",
+          "base": "area",
+          "factor": 0.9,
+          "price": 18
+        }
+      ]
+    },
+    {
+      "id": "alcipan_agrafli",
+      "path": [
+        "Alçıpan Duvar & Tavan",
+        "Alçıpan Asma Tavan"
+      ],
+      "menuLabel": "Agraflı",
+      "name": "Alçıpan Asma Tavan — Agraflı",
+      "labor": 125,
+      "mats": [
+        {
+          "name": "Alçıpan Levha 9,5 mm",
+          "note": "120x200 cm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.47,
+          "price": 190
+        },
+        {
+          "name": "TC60 Tavan C Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.3,
+          "price": 68
+        },
+        {
+          "name": "TU28 Duvar U Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "perimeter",
+          "factor": 0.34,
+          "price": 45
+        },
+        {
+          "name": "Agraf (Bağlantı Elemanı)",
+          "note": "—",
+          "unit": "adet",
+          "base": "area",
+          "factor": 2.2,
+          "price": 9
+        },
+        {
+          "name": "Dübel + Vida (agraf)",
+          "note": "—",
+          "unit": "adet",
+          "base": "area",
+          "factor": 2.2,
+          "price": 2.5
+        },
+        {
+          "name": "Alçıpan Vidası 25 mm",
+          "note": "—",
+          "unit": "adet",
+          "base": "area",
+          "factor": 23,
+          "price": 0.6
+        },
+        {
+          "name": "Derz Bandı",
+          "note": "file/kağıt",
+          "unit": "mt",
+          "base": "area",
+          "factor": 1.6,
+          "price": 3
+        },
+        {
+          "name": "Derz / Saten Alçı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.55,
+          "price": 13
+        }
+      ]
+    },
+    {
+      "id": "alcipan_askili",
+      "path": [
+        "Alçıpan Duvar & Tavan",
+        "Alçıpan Asma Tavan"
+      ],
+      "menuLabel": "Askı Çubuklu",
+      "name": "Alçıpan Asma Tavan — Askı Çubuklu",
+      "labor": 130,
+      "mats": [
+        {
+          "name": "Alçıpan Levha 9,5 mm",
+          "note": "120x200 cm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.47,
+          "price": 190
+        },
+        {
+          "name": "TC60 Tavan C Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.3,
+          "price": 68
+        },
+        {
+          "name": "TU28 Duvar U Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "perimeter",
+          "factor": 0.34,
+          "price": 45
+        },
+        {
+          "name": "Askı Çubuğu + Ayar Maşası",
+          "note": "set",
+          "unit": "set",
+          "base": "area",
+          "factor": 0.7,
+          "price": 24
+        },
+        {
+          "name": "Dübel + Vida (askı)",
+          "note": "—",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.7,
+          "price": 2.5
+        },
+        {
+          "name": "Alçıpan Vidası 25 mm",
+          "note": "—",
+          "unit": "adet",
+          "base": "area",
+          "factor": 23,
+          "price": 0.6
+        },
+        {
+          "name": "Derz Bandı",
+          "note": "file/kağıt",
+          "unit": "mt",
+          "base": "area",
+          "factor": 1.6,
+          "price": 3
+        },
+        {
+          "name": "Derz / Saten Alçı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.55,
+          "price": 13
+        }
+      ]
+    },
+    {
+      "id": "bolme_cift",
+      "path": [
+        "Alçıpan Duvar & Tavan",
+        "Alçıpan Bölme Duvar"
+      ],
+      "menuLabel": "Çift Kat Alçıpan",
+      "name": "Alçıpan Bölme Duvar — Çift Kat",
+      "labor": 180,
+      "dimHint": "En = Uzunluk, Boy = Yükseklik",
+      "mats": [
+        {
+          "name": "Alçıpan Levha 12,5 mm",
+          "note": "çift yüz çift kat",
+          "unit": "adet",
+          "base": "area",
+          "factor": 1.85,
+          "price": 155
+        },
+        {
+          "name": "DC75 Dikme Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.58,
+          "price": 64
+        },
+        {
+          "name": "DU75 Taban/Tavan Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.24,
+          "price": 58
+        },
+        {
+          "name": "Taş Yünü Dolgu 5 cm",
+          "note": "ses yalıtımı",
+          "unit": "m²",
+          "base": "area",
+          "factor": 1,
+          "price": 95
+        },
+        {
+          "name": "Alçıpan Vidası 25/35 mm",
+          "note": "—",
+          "unit": "adet",
+          "base": "area",
+          "factor": 46,
+          "price": 0.65
+        },
+        {
+          "name": "Derz Bandı",
+          "note": "—",
+          "unit": "mt",
+          "base": "area",
+          "factor": 2.2,
+          "price": 3
+        },
+        {
+          "name": "Derz / Saten Alçı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.8,
+          "price": 13
+        },
+        {
+          "name": "Dübel + Vida",
+          "note": "profil sabitleme",
+          "unit": "adet",
+          "base": "perimeter",
+          "factor": 3,
+          "price": 2.5
+        }
+      ]
+    },
+    {
+      "id": "bolme_tek",
+      "path": [
+        "Alçıpan Duvar & Tavan",
+        "Alçıpan Bölme Duvar"
+      ],
+      "menuLabel": "Tek Kat Alçıpan",
+      "name": "Alçıpan Bölme Duvar — Tek Kat",
+      "labor": 150,
+      "dimHint": "En = Uzunluk, Boy = Yükseklik",
+      "mats": [
+        {
+          "name": "Alçıpan Levha 12,5 mm",
+          "note": "çift yüz tek kat",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.9,
+          "price": 155
+        },
+        {
+          "name": "DC75 Dikme Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.58,
+          "price": 64
+        },
+        {
+          "name": "DU75 Taban/Tavan Profili",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.24,
+          "price": 58
+        },
+        {
+          "name": "Alçıpan Vidası 25 mm",
+          "note": "—",
+          "unit": "adet",
+          "base": "area",
+          "factor": 29,
+          "price": 0.6
+        },
+        {
+          "name": "Derz Bandı",
+          "note": "—",
+          "unit": "mt",
+          "base": "area",
+          "factor": 2.2,
+          "price": 3
+        },
+        {
+          "name": "Derz / Saten Alçı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.7,
+          "price": 13
+        },
+        {
+          "name": "Dübel + Vida",
+          "note": "profil sabitleme",
+          "unit": "adet",
+          "base": "perimeter",
+          "factor": 3,
+          "price": 2.5
+        }
+      ]
+    },
+    {
+      "id": "giydirme_cift",
+      "path": [
+        "Alçıpan Duvar & Tavan",
+        "Alçıpan Giydirme Duvar"
+      ],
+      "menuLabel": "Çift Kat Alçıpan",
+      "name": "Alçıpan Giydirme Duvar — Çift Kat",
+      "labor": 140,
+      "dimHint": "En = Uzunluk, Boy = Yükseklik",
+      "mats": [
+        {
+          "name": "Alçıpan Levha 12,5 mm",
+          "note": "tek yüz çift kat",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.94,
+          "price": 155
+        },
+        {
+          "name": "DU/DC Profil veya Agraf",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.55,
+          "price": 60
+        },
+        {
+          "name": "Alçıpan Vidası 25/35 mm",
+          "note": "—",
+          "unit": "adet",
+          "base": "area",
+          "factor": 24,
+          "price": 0.6
+        },
+        {
+          "name": "Derz Bandı",
+          "note": "—",
+          "unit": "mt",
+          "base": "area",
+          "factor": 1.2,
+          "price": 3
+        },
+        {
+          "name": "Derz / Saten Alçı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.55,
+          "price": 13
+        },
+        {
+          "name": "Dübel + Vida",
+          "note": "duvar sabitleme",
+          "unit": "adet",
+          "base": "area",
+          "factor": 1.6,
+          "price": 2.5
+        }
+      ]
+    },
+    {
+      "id": "giydirme_tek",
+      "path": [
+        "Alçıpan Duvar & Tavan",
+        "Alçıpan Giydirme Duvar"
+      ],
+      "menuLabel": "Tek Kat Alçıpan",
+      "name": "Alçıpan Giydirme Duvar — Tek Kat",
+      "labor": 120,
+      "dimHint": "En = Uzunluk, Boy = Yükseklik",
+      "mats": [
+        {
+          "name": "Alçıpan Levha 12,5 mm",
+          "note": "tek yüz tek kat",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.47,
+          "price": 155
+        },
+        {
+          "name": "DU/DC Profil veya Agraf",
+          "note": "3000 mm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 0.55,
+          "price": 60
+        },
+        {
+          "name": "Alçıpan Vidası 25 mm",
+          "note": "—",
+          "unit": "adet",
+          "base": "area",
+          "factor": 15,
+          "price": 0.6
+        },
+        {
+          "name": "Derz Bandı",
+          "note": "—",
+          "unit": "mt",
+          "base": "area",
+          "factor": 1.2,
+          "price": 3
+        },
+        {
+          "name": "Derz / Saten Alçı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.5,
+          "price": 13
+        },
+        {
+          "name": "Dübel + Vida",
+          "note": "duvar sabitleme",
+          "unit": "adet",
+          "base": "area",
+          "factor": 1.6,
+          "price": 2.5
+        }
+      ]
+    },
+    {
+      "id": "alci_siva",
+      "path": [],
+      "menuLabel": "Alçı Sıva ve Saten",
+      "name": "Alçı Sıva ve Saten",
+      "labor": 90,
+      "mats": [
+        {
+          "name": "Makine / Kaba Sıva Alçısı",
+          "note": "~1 cm",
+          "unit": "kg",
+          "base": "area",
+          "factor": 10,
+          "price": 7.5
+        },
+        {
+          "name": "Saten Perdah Alçısı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 2,
+          "price": 9
+        },
+        {
+          "name": "Yüzey Astarı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.15,
+          "price": 40
+        },
+        {
+          "name": "Galvaniz Köşe Profili",
+          "note": "—",
+          "unit": "mt",
+          "base": "perimeter",
+          "factor": 0.4,
+          "price": 8
+        }
+      ]
+    },
+    {
+      "id": "kara_siva",
+      "path": [],
+      "menuLabel": "Dış & İç Cephe Kara Sıva",
+      "name": "Dış & İç Cephe Kara Sıva",
+      "labor": 100,
+      "mats": [
+        {
+          "name": "Hazır Kara Sıva Harcı",
+          "note": "~2 cm",
+          "unit": "kg",
+          "base": "area",
+          "factor": 20,
+          "price": 5
+        },
+        {
+          "name": "Sıva Filesi",
+          "note": "dış cephe",
+          "unit": "m²",
+          "base": "area",
+          "factor": 1.05,
+          "price": 12
+        },
+        {
+          "name": "Sıva Köşe Profili",
+          "note": "—",
+          "unit": "mt",
+          "base": "perimeter",
+          "factor": 0.4,
+          "price": 8
+        }
+      ]
+    },
+    {
+      "id": "seramik",
+      "path": [],
+      "menuLabel": "Seramik Yapıştırıcı & Derz",
+      "name": "Seramik Yapıştırıcı & Derz",
+      "labor": 130,
+      "mats": [
+        {
+          "name": "Seramik Yapıştırıcısı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 5,
+          "price": 8
+        },
+        {
+          "name": "Derz Dolgu Malzemesi",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.5,
+          "price": 22
+        },
+        {
+          "name": "Fayans Çarpı / Plus",
+          "note": "—",
+          "unit": "adet",
+          "base": "area",
+          "factor": 3,
+          "price": 0.5
+        }
+      ]
+    },
+    {
+      "id": "manto_eps",
+      "path": [
+        "Dış Cephe Mantolama"
+      ],
+      "menuLabel": "EPS Karbonlu",
+      "name": "Dış Cephe Mantolama — EPS Karbonlu",
+      "labor": 150,
+      "mats": [
+        {
+          "name": "EPS Karbonlu Levha 5 cm",
+          "note": "—",
+          "unit": "m²",
+          "base": "area",
+          "factor": 1.05,
+          "price": 92
+        },
+        {
+          "name": "Yapıştırıcı Harç",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 6,
+          "price": 8.5
+        },
+        {
+          "name": "Donatı Filesi",
+          "note": "160 gr",
+          "unit": "m²",
+          "base": "area",
+          "factor": 1.1,
+          "price": 12
+        },
+        {
+          "name": "Mantolama Dübeli",
+          "note": "—",
+          "unit": "adet",
+          "base": "area",
+          "factor": 6,
+          "price": 4
+        },
+        {
+          "name": "Köşe / Damlalık Profili",
+          "note": "—",
+          "unit": "mt",
+          "base": "perimeter",
+          "factor": 0.5,
+          "price": 10
+        },
+        {
+          "name": "Sıva Harcı (2. kat)",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 4,
+          "price": 8
+        },
+        {
+          "name": "Dekoratif Astar",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.25,
+          "price": 45
+        },
+        {
+          "name": "Dekoratif Kaplama",
+          "note": "1,5 mm",
+          "unit": "kg",
+          "base": "area",
+          "factor": 3,
+          "price": 32
+        }
+      ]
+    },
+    {
+      "id": "manto_tasyunu",
+      "path": [
+        "Dış Cephe Mantolama"
+      ],
+      "menuLabel": "Taşyünü",
+      "name": "Dış Cephe Mantolama — Taşyünü",
+      "labor": 165,
+      "mats": [
+        {
+          "name": "Taşyünü Levha 5 cm",
+          "note": "—",
+          "unit": "m²",
+          "base": "area",
+          "factor": 1.05,
+          "price": 168
+        },
+        {
+          "name": "Yapıştırıcı Harç",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 7,
+          "price": 8.5
+        },
+        {
+          "name": "Donatı Filesi",
+          "note": "160 gr",
+          "unit": "m²",
+          "base": "area",
+          "factor": 1.1,
+          "price": 12
+        },
+        {
+          "name": "Mantolama Dübeli (metal)",
+          "note": "—",
+          "unit": "adet",
+          "base": "area",
+          "factor": 8,
+          "price": 6
+        },
+        {
+          "name": "Köşe / Damlalık Profili",
+          "note": "—",
+          "unit": "mt",
+          "base": "perimeter",
+          "factor": 0.5,
+          "price": 10
+        },
+        {
+          "name": "Sıva Harcı (2. kat)",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 5,
+          "price": 8
+        },
+        {
+          "name": "Dekoratif Astar",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.25,
+          "price": 45
+        },
+        {
+          "name": "Dekoratif Kaplama",
+          "note": "1,5 mm",
+          "unit": "kg",
+          "base": "area",
+          "factor": 3,
+          "price": 32
+        }
+      ]
+    },
+    {
+      "id": "su_tam",
+      "path": [
+        "Su Yalıtım"
+      ],
+      "menuLabel": "Tam Elastik Sürme İzolasyon",
+      "name": "Tam Elastik Sürme İzolasyon",
+      "labor": 85,
+      "mats": [
+        {
+          "name": "Tam Elastik Su Yalıtım Malz.",
+          "note": "2 bileşenli, 2 kat",
+          "unit": "kg",
+          "base": "area",
+          "factor": 3.5,
+          "price": 68
+        },
+        {
+          "name": "Astar",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.25,
+          "price": 42
+        },
+        {
+          "name": "Köşe Bandı / File",
+          "note": "—",
+          "unit": "mt",
+          "base": "perimeter",
+          "factor": 1,
+          "price": 7
+        }
+      ]
+    },
+    {
+      "id": "su_yari",
+      "path": [
+        "Su Yalıtım"
+      ],
+      "menuLabel": "Yarı Elastik Sürme İzolasyon",
+      "name": "Yarı Elastik Sürme İzolasyon",
+      "labor": 80,
+      "mats": [
+        {
+          "name": "Yarı Elastik Su Yalıtım Malz.",
+          "note": "2 kat",
+          "unit": "kg",
+          "base": "area",
+          "factor": 3,
+          "price": 52
+        },
+        {
+          "name": "Astar",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.25,
+          "price": 42
+        },
+        {
+          "name": "Köşe Bandı / File",
+          "note": "—",
+          "unit": "mt",
+          "base": "perimeter",
+          "factor": 1,
+          "price": 7
+        }
+      ]
+    },
+    {
+      "id": "su_negatif",
+      "path": [
+        "Su Yalıtım"
+      ],
+      "menuLabel": "Negatif (İç Cephe) İzolasyon",
+      "name": "Negatif (İç Cephe) İzolasyon",
+      "labor": 90,
+      "mats": [
+        {
+          "name": "Kristalize Negatif Yalıtım Harcı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 3.5,
+          "price": 60
+        },
+        {
+          "name": "Yüzey Doyurma / Astar",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.3,
+          "price": 35
+        },
+        {
+          "name": "Kılcal Tamir Harcı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.5,
+          "price": 40
+        }
+      ]
+    },
+    {
+      "id": "su_pozitif",
+      "path": [
+        "Su Yalıtım"
+      ],
+      "menuLabel": "Pozitif (Dış Cephe) İzolasyon",
+      "name": "Pozitif (Dış Cephe) İzolasyon",
+      "labor": 85,
+      "mats": [
+        {
+          "name": "Sürme Esaslı Pozitif Yalıtım",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 3.2,
+          "price": 55
+        },
+        {
+          "name": "Astar",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.25,
+          "price": 42
+        },
+        {
+          "name": "Donatı Filesi",
+          "note": "—",
+          "unit": "m²",
+          "base": "area",
+          "factor": 1.05,
+          "price": 10
+        },
+        {
+          "name": "Köşe Bandı",
+          "note": "—",
+          "unit": "mt",
+          "base": "perimeter",
+          "factor": 1,
+          "price": 7
+        }
+      ]
+    },
+    {
+      "id": "boya_ic",
+      "path": [
+        "Dış ve İç Cephe Boya"
+      ],
+      "menuLabel": "İç Cephe Boya",
+      "name": "İç Cephe Boya",
+      "labor": 60,
+      "mats": [
+        {
+          "name": "İç Cephe Boyası",
+          "note": "silikonlu, 2 kat",
+          "unit": "lt",
+          "base": "area",
+          "factor": 0.25,
+          "price": 45
+        },
+        {
+          "name": "İç Cephe Astarı",
+          "note": "—",
+          "unit": "lt",
+          "base": "area",
+          "factor": 0.15,
+          "price": 38
+        },
+        {
+          "name": "Alçı / Saten Macun (tamir)",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.4,
+          "price": 14
+        },
+        {
+          "name": "Zımpara + Maskeleme Bandı",
+          "note": "sarf",
+          "unit": "set",
+          "base": "area",
+          "factor": 0.05,
+          "price": 30
+        }
+      ]
+    },
+    {
+      "id": "boya_dis",
+      "path": [
+        "Dış ve İç Cephe Boya"
+      ],
+      "menuLabel": "Dış Cephe Boya",
+      "name": "Dış Cephe Boya",
+      "labor": 75,
+      "mats": [
+        {
+          "name": "Dış Cephe Boyası",
+          "note": "silikonlu, 2 kat",
+          "unit": "lt",
+          "base": "area",
+          "factor": 0.28,
+          "price": 55
+        },
+        {
+          "name": "Dış Cephe Astarı",
+          "note": "—",
+          "unit": "lt",
+          "base": "area",
+          "factor": 0.18,
+          "price": 48
+        },
+        {
+          "name": "Dolgu / Tamir Harcı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.3,
+          "price": 18
+        }
+      ]
+    },
+    {
+      "id": "boya_cizgi",
+      "path": [
+        "Dış ve İç Cephe Boya"
+      ],
+      "menuLabel": "Otopark ve Yol Çizgi Boyası",
+      "name": "Otopark ve Yol Çizgi Boyası",
+      "labor": 70,
+      "dimHint": "Alan = boyanacak çizgi alanı",
+      "mats": [
+        {
+          "name": "Trafik / Yol Çizgi Boyası",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 0.6,
+          "price": 90
+        },
+        {
+          "name": "İnceltici / Tiner",
+          "note": "—",
+          "unit": "lt",
+          "base": "area",
+          "factor": 0.1,
+          "price": 55
+        },
+        {
+          "name": "Maskeleme Bandı",
+          "note": "—",
+          "unit": "mt",
+          "base": "perimeter",
+          "factor": 2,
+          "price": 4
+        }
+      ]
+    },
+    {
+      "id": "gazbeton",
+      "path": [],
+      "menuLabel": "Gaz Beton Duvar",
+      "name": "Gaz Beton Duvar",
+      "labor": 110,
+      "dimHint": "En = Uzunluk, Boy = Yükseklik",
+      "mats": [
+        {
+          "name": "Gaz Beton Blok",
+          "note": "60x25x20 cm",
+          "unit": "adet",
+          "base": "area",
+          "factor": 6.67,
+          "price": 65
+        },
+        {
+          "name": "Gaz Beton Yapıştırma Harcı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 5,
+          "price": 9
+        }
+      ]
+    },
+    {
+      "id": "tugla",
+      "path": [],
+      "menuLabel": "Tuğla Duvar",
+      "name": "Tuğla Duvar",
+      "labor": 120,
+      "dimHint": "En = Uzunluk, Boy = Yükseklik",
+      "mats": [
+        {
+          "name": "Delikli Tuğla",
+          "note": "duvar tuğlası",
+          "unit": "adet",
+          "base": "area",
+          "factor": 33,
+          "price": 4.5
+        },
+        {
+          "name": "Harç (çimento + kum / hazır)",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 25,
+          "price": 3
+        }
+      ]
+    },
+    {
+      "id": "klinker",
+      "path": [],
+      "menuLabel": "Klinker Tuğla",
+      "name": "Klinker Tuğla (Cephe)",
+      "labor": 180,
+      "mats": [
+        {
+          "name": "Klinker Tuğla",
+          "note": "cephe kaplama",
+          "unit": "adet",
+          "base": "area",
+          "factor": 55,
+          "price": 12
+        },
+        {
+          "name": "Klinker Yapıştırıcısı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 8,
+          "price": 14
+        },
+        {
+          "name": "Klinker Derz Harcı",
+          "note": "—",
+          "unit": "kg",
+          "base": "area",
+          "factor": 4,
+          "price": 18
+        }
+      ]
+    }
   ],
+  "articles": [
+    {
+      "id": "clipin",
+      "cat": "Asma Tavan",
+      "calc": "al_clip_60",
+      "title": "Gizli Sistem (Clip-in) Metal & Alüminyum Asma Tavan",
+      "excerpt": "Sökülebilir, temiz görünümlü, ıslak hacme dayanıklı gizli taşıyıcılı tavan sisteminin kuruluşu.",
+      "lead": "Koridor, ıslak hacim ve cephe saçaklarında hem şık hem de bakımı kolay bir tavan mı arıyorsunuz? Panelleri alttan bastırmalı (clip-in) gizli sistem, taşıyıcıları göstermeden düz bir yüzey verir ve tek panel sökülerek üstteki tesisata ulaşılabilir. Aşağıda kot almadan panel montajına kadar tüm akışı bulacaksınız.",
+      "extra": "",
+      "intro": "Gizli taşıyıcılı, panelleri alttan bastırmalı (clip-in) sistemle geçen, sökülebilir metal/alüminyum asma tavan. Islak hacim, koridor ve cephe saçaklarında tercih edilir.",
+      "steps": [
+        "\u003cb>Kot ve şakül:\u003c/b> Bitmiş tavan kotunu lazer/hortum terazi ile duvara işaretleyip çevre hattını çekin.",
+        "\u003cb>Kenar profili:\u003c/b> Duvar L (kenar) profilini kot çizgisine 30–40 cm aralıkla dübel-vida ile sabitleyin.",
+        "\u003cb>Askı düzeni:\u003c/b> Ana taşıyıcı hattına 80–100 cm aralıkla askı çubuğu/telini tavana dübelleyin.",
+        "\u003cb>Taşıyıcı montajı:\u003c/b> Clip-in taşıyıcıları panel modülüne (30x30/60x60) göre askılara asıp terazisini alın.",
+        "\u003cb>Panel takma:\u003c/b> Panelleri taşıyıcıya alttan bastırarak klipsleyin; kenarlarda ölçüsünde kesin.",
+        "\u003cb>Kontrol:\u003c/b> Fuga hizası ve terazisini kontrol edip gerekli ayarı maşadan yapın."
+      ],
+      "tips": [
+        "Alüminyum panellerde parmak izine karşı eldivenle çalışın; koruyucu filmi montaj sonrası soyun.",
+        "Islak hacimde galvaniz yerine alüminyum panel korozyona daha dayanıklıdır.",
+        "Panel kesiminde giyotin/el makası kullanın; taşlama çapak ve ısı izi bırakır."
+      ],
+      "tools": [
+        "Lazer distomat",
+        "Su terazisi",
+        "Vidalama",
+        "Kenar makası",
+        "Matkap"
+      ]
+    },
+    {
+      "id": "layin",
+      "cat": "Asma Tavan",
+      "calc": "karolam_60",
+      "title": "Taşıyıcılı (Lay-in) Asma Tavan: Karolam ve Taşyünü",
+      "excerpt": "Ofis ve mağazaların klasiği: 60x60 plakaların T24 ızgaraya oturtulduğu en pratik sistem.",
+      "lead": "En yaygın asma tavan sistemi lay-in ızgaradır: açık T24 taşıyıcı bir ızgara kurulur, 60x60 karolam veya taşyünü plakalar gözlere üstten oturtulur. Hızlı kurulur, kolay sökülür, aydınlatma ve havalandırma entegrasyonu kolaydır. İşte doğru terazide bir tavan için adımlar.",
+      "extra": "",
+      "intro": "T24 gövdeli açık taşıyıcı ızgaraya 60x60 plakaların üstten oturtulduğu, en yaygın ofis/mağaza asma tavan sistemi (karolam, taşyünü, mineral).",
+      "steps": [
+        "\u003cb>Kot işaretleme:\u003c/b> Bitmiş tavan kotunu çevre duvarlara lazerle aktarın.",
+        "\u003cb>Kenar L profili:\u003c/b> Kot çizgisine 40 cm aralıkla dübel-vida ile çakın.",
+        "\u003cb>Askılar:\u003c/b> Ana taşıyıcı hattına 90–120 cm arayla askı teli ve klipsi tavana sabitleyin.",
+        "\u003cb>Ana taşıyıcı:\u003c/b> 3660 mm ana T profilleri 1200 mm aksla asıp terazi alın.",
+        "\u003cb>Tali taşıyıcı:\u003c/b> 1200 ve 600 mm tali profilleri geçirerek 600x600 gözleri oluşturun.",
+        "\u003cb>Plaka yerleştirme:\u003c/b> Plakaları gözlere üstten oturtun; kenarları ölçüsünde kesin."
+      ],
+      "tips": [
+        "Izgara diklik/gönyesini köşegen ölçerek kontrol edin; kayma fugaları bozar.",
+        "Taşyünü plakalar nemden etkilenir; depolama ve montajda kuru tutun.",
+        "Aydınlatma/anemostat için plakayı montajdan önce kesip yerleştirin."
+      ],
+      "tools": [
+        "Lazer",
+        "Su terazisi",
+        "Kenar makası",
+        "Maket bıçağı",
+        "Vidalama"
+      ]
+    },
+    {
+      "id": "alcipanTavanAgraf",
+      "cat": "Alçıpan",
+      "calc": "alcipan_agrafli",
+      "title": "Agraflı Alçıpan Asma Tavan",
+      "excerpt": "Kot farkı azken hızlı çözüm: tavana agrafla doğrudan bağlanan düşük sarkımlı alçıpan tavan.",
+      "lead": "Mevcut tavanla yeni tavan arasında az boşluk varsa, askı çubuklarıyla uğraşmadan agraf (braket) ile doğrudan bağlanan sistem idealdir. Düşük sarkım, hızlı montaj. Tesisat için derin boşluk gerekmiyorsa en ekonomik alçıpan tavan çözümüdür.",
+      "extra": "",
+      "intro": "Mevcut tavana agraf (askı braketi) ile doğrudan bağlanan, düşük sarkımlı alçıpan asma tavan. Kot farkı azsa tercih edilir.",
+      "steps": [
+        "\u003cb>Kot ve hat:\u003c/b> Çevre kotunu işaretleyip TU28 duvar U profilini duvara çakın.",
+        "\u003cb>Agraf montajı:\u003c/b> Tavana 60–80 cm aralıkla agrafları dübel-vida ile sabitleyin.",
+        "\u003cb>TC60 profil:\u003c/b> Tavan C profillerini agraflara geçirip 40 cm aksla terazisinde kurun.",
+        "\u003cb>Levha kaplama:\u003c/b> 9,5 mm alçıpanı şaşırtmalı derzle 25 mm vida ile 17–20 cm aralıkla vidalayın.",
+        "\u003cb>Derz:\u003c/b> Derz bandını çekip saten/derz alçısı ile 2–3 pasoda dolgu yapın.",
+        "\u003cb>Zımpara:\u003c/b> Kuruyan yüzeyi zımparalayıp boyaya hazır hale getirin."
+      ],
+      "tips": [
+        "Tesisat için yeterli boşluk yoksa agraf yerine askı çubuklu sisteme geçin.",
+        "Vida başını kağıdı yırtmadan hafif gömün; aksi halde alçı tutmaz.",
+        "Derz alçısını fazla sulandırmayın, çatlama yapar."
+      ],
+      "tools": [
+        "Lazer",
+        "Vidalama",
+        "Spatula/mala",
+        "Zımpara",
+        "Maket bıçağı"
+      ]
+    },
+    {
+      "id": "alcipanTavanAski",
+      "cat": "Alçıpan",
+      "calc": "alcipan_askili",
+      "title": "Askı Çubuklu Alçıpan Asma Tavan",
+      "excerpt": "Tesisat boşluğu ve büyük kot farkları için ayarlı askı çubuklu alçıpan tavan.",
+      "lead": "Tavan arasından havalandırma, tesisat veya spot aydınlatma geçecekse yeterli boşluğa ihtiyacınız var. Askı çubuğu + ayar maşası sistemi, tavanı istediğiniz kotta ve tam terazisinde asmanıza imkân verir. Adımları ve maşa ayarının püf noktalarını aşağıda topladık.",
+      "extra": "",
+      "intro": "Askı çubuğu + ayar maşası ile tavandan istenen kotta asılan alçıpan tavan. Tesisat boşluğu ve büyük kot farkları için uygundur.",
+      "steps": [
+        "\u003cb>Kot ve hat:\u003c/b> Çevre kotunu işaretleyip TU28 duvar U profilini çakın.",
+        "\u003cb>Askı düzeni:\u003c/b> Tavana 90 cm aksla askı çubuklarını dübelleyip ayar maşalarını takın.",
+        "\u003cb>TC60 profil:\u003c/b> Tavan C profillerini maşalara geçirip 40 cm aksla terazi alın.",
+        "\u003cb>Levha kaplama:\u003c/b> 9,5 mm alçıpanı şaşırtmalı derzle 25 mm vida ile kaplayın.",
+        "\u003cb>Derz:\u003c/b> Derz bandı + saten alçısı ile 2–3 pasoda kapatın.",
+        "\u003cb>Zımpara:\u003c/b> Yüzeyi zımparalayıp boyaya hazırlayın."
+      ],
+      "tips": [
+        "Maşa ayarıyla terazisini montaj bitmeden alın; sonradan zordur.",
+        "Ağır aydınlatma için ilave askı takviyesi yapın.",
+        "Büyük tavanlarda dilatasyon (genleşme) derzi bırakın."
+      ],
+      "tools": [
+        "Lazer",
+        "Vidalama",
+        "Maşa/pense",
+        "Spatula",
+        "Zımpara"
+      ]
+    },
+    {
+      "id": "bolme",
+      "cat": "Alçıpan",
+      "calc": "bolme_tek",
+      "title": "Alçıpan Bölme Duvar: Tek Kat mı, Çift Kat mı?",
+      "excerpt": "İskelet + çift yüz kaplama + yalıtım ile hızlı, hafif ayırma duvarı; ses ve yangın seçenekleriyle.",
+      "lead": "Mekânı bölmek için tuğla örmeye gerek yok. DC/DU profil iskelet üzerine iki yüzü alçıpanla kaplanan bölme duvar, hafif ve hızlıdır. Tek kat ekonomiktir; çift kat kaplama ve taş yünü dolgu ise ses ve yangın dayanımını belirgin artırır. Hangisini seçeceğinize karar verirken şu akışı izleyin.",
+      "extra": "\u003cdiv class=\"g-note\">\u003cb>Tek kat mı, çift kat mı?\u003c/b> Tek kat hızlı ve ekonomiktir, ofis ayırma duvarlarında yeterlidir. Çift kat kaplama + taş yünü dolgu, otel/hastane gibi ses ve yangın gerektiren yerlerde tercih edilir.\u003c/div>",
+      "intro": "DC/DU profil iskelet üzerine iki yüzü alçıpanla kaplanan, içi yalıtım dolgulu ayırma duvarı. Tek kat/çift kat ve yalıtım ses/yangın performansını belirler.",
+      "steps": [
+        "\u003cb>Aks çizimi:\u003c/b> Duvar hattını yerde ve tavanda şakülle karşılıklı işaretleyin.",
+        "\u003cb>Taban/tavan profili:\u003c/b> DU75 profilleri ses bandı üstüne 60 cm aksla dübelleyin.",
+        "\u003cb>Dikmeler:\u003c/b> DC75 dikmeleri 40–60 cm aksla U profillere geçirin.",
+        "\u003cb>Tek yüz kaplama:\u003c/b> Bir yüzü 12,5 mm alçıpanla 25 cm vida aralığıyla vidalayın.",
+        "\u003cb>Yalıtım + tesisat:\u003c/b> Taş yünü dolguyu yerleştirip elektrik/tesisatı geçirin.",
+        "\u003cb>İkinci yüz + derz:\u003c/b> Diğer yüzü kaplayıp derz bandı ve alçı ile kapatın."
+      ],
+      "tips": [
+        "Çift kat kaplama ses ve yangın dayanımını belirgin artırır.",
+        "Islak hacim yüzünde yeşil (suya dayanıklı) alçıpan kullanın.",
+        "Profil-döşeme arasına ses bandı koyarsanız darbe sesi azalır."
+      ],
+      "tools": [
+        "Lazer/şakül",
+        "Vidalama",
+        "Kenar makası",
+        "Maket bıçağı",
+        "Spatula"
+      ]
+    },
+    {
+      "id": "giydirme",
+      "cat": "Alçıpan",
+      "calc": "giydirme_tek",
+      "title": "Alçıpan Giydirme Duvar ile Yüzey İyileştirme",
+      "excerpt": "Bozuk, nemli veya soğuk duvarların önüne tek yüz kaplama ile düzgün, yalıtımlı yüzey.",
+      "lead": "Eski, dalgalı ya da soğuk bir duvarı sıvayla düzeltmek yerine önüne alçıpan giydirmek çoğu zaman daha hızlı ve temiz sonuç verir. Profil arasına yalıtım koyarak ısı/ses konforu da kazandırır. Rutubet varsa önce alınması gereken önlemleri de anlattık.",
+      "extra": "",
+      "intro": "Mevcut duvarın önüne tek yüz alçıpan kaplayarak düzgün/yalıtımlı yüzey elde etme. Nemli, bozuk veya soğuk duvarların iyileştirilmesinde kullanılır.",
+      "steps": [
+        "\u003cb>Yüzey hazırlığı:\u003c/b> Gevşek sıvayı temizleyin, kaba düzensizlikleri alın.",
+        "\u003cb>Taşıyıcı:\u003c/b> DU/DC profil veya agrafları 40–60 cm aksla sabitleyin (ya da yapıştırma alçısıyla).",
+        "\u003cb>Levha kaplama:\u003c/b> 12,5 mm alçıpanı tek yüz vidalayın; çift kat isteniyorsa şaşırtmalı ikinci kat.",
+        "\u003cb>Yalıtım (ops.):\u003c/b> Profil arası boşluğa levha yalıtım koyabilirsiniz.",
+        "\u003cb>Derz:\u003c/b> Derz bandı + alçı ile birleşimleri kapatın.",
+        "\u003cb>Zımpara:\u003c/b> Yüzeyi zımparalayıp boyaya hazırlayın."
+      ],
+      "tips": [
+        "Rutubetli duvarda önce nem bariyeri/su yalıtımı değerlendirin.",
+        "Yapıştırma alçısı yöntemi profilsiz ve hızlıdır ama zeminde boşluk bırakır.",
+        "Priz/anahtar kutularını levha öncesi işaretleyin."
+      ],
+      "tools": [
+        "Vidalama",
+        "Mala",
+        "Kenar makası",
+        "Maket bıçağı",
+        "Zımpara"
+      ]
+    },
+    {
+      "id": "alciSiva",
+      "cat": "Sıva & Saten",
+      "calc": "alci_siva",
+      "title": "Alçı Sıva ve Saten ile Boyaya Hazır Yüzey",
+      "excerpt": "İç mekânda kaba alçı + saten perdah ile pürüzsüz, boyaya hazır duvar ve tavan.",
+      "lead": "Boyanın güzel durması, altındaki yüzeyin düzgünlüğüne bağlıdır. Kaba alçı sıva ile yüzeyi doğrultup saten perdahla pürüzsüz hale getirmek, iç mekânda en yaygın bitirme yöntemidir. Alçının açık kalma süresini yönetmek işin kalbidir; adımlarda buna dikkat çektik.",
+      "extra": "",
+      "intro": "İç mekân duvar/tavanlarında kaba alçı sıva + saten perdah ile boyaya hazır düzgün yüzey elde etme.",
+      "steps": [
+        "\u003cb>Yüzey hazırlığı:\u003c/b> Tozu alın, emici yüzeye astar sürün; köşelere galvaniz köşe profili yerleştirin.",
+        "\u003cb>Alçı hazırlama:\u003c/b> Kaba/makine alçısını su içine serperek topaksız karıp dinlendirin.",
+        "\u003cb>Kaba sıva:\u003c/b> Mastar ve mala ile ~1 cm çekip yüzeyi mastarlayın.",
+        "\u003cb>Perdah:\u003c/b> Priz almadan yüzeyi perdahlayın; köşe ve kenarları düzeltin.",
+        "\u003cb>Saten:\u003c/b> Kuruyan yüzeye ince saten alçısını 1–2 pasoda çekin.",
+        "\u003cb>Zımpara:\u003c/b> Kuruduktan sonra hafif zımparayla boyaya hazırlayın."
+      ],
+      "tips": [
+        "Alçının açık kalma (priz) süresine dikkat; fazla harç boşa gider.",
+        "Emici yüzeye astar sürmezseniz alçı çabuk kavrar, işlenemez.",
+        "Tek seferde çok kalın çekmeyin, çatlar."
+      ],
+      "tools": [
+        "Mala",
+        "Mastar",
+        "Perdah malası",
+        "Köşe profili",
+        "Zımpara"
+      ]
+    },
+    {
+      "id": "karaSiva",
+      "cat": "Sıva & Saten",
+      "calc": "kara_siva",
+      "title": "Dış & İç Cephe Kara Sıva",
+      "excerpt": "Mantolama, seramik veya son kat sıva öncesi taşıyıcı çimento esaslı kaba sıva.",
+      "lead": "Kara sıva, üzerine gelecek mantolama, seramik veya dekoratif sıvanın oturacağı sağlam zemini oluşturur. Doğru aderans, mastar anoları ve kür yapılmazsa çatlar. Cephede uzun ömür için serpme ve kürü asla atlamayın; nedenini adımlarda açıkladık.",
+      "extra": "",
+      "intro": "Çimento esaslı kaba sıva ile iç/dış cephede taşıyıcı yüzey oluşturma; üstüne mantolama, seramik veya son kat sıva gelebilir.",
+      "steps": [
+        "\u003cb>Yüzey ıslatma:\u003c/b> Tozu alıp yüzeyi nemlendirin; köşe profillerini yerleştirin.",
+        "\u003cb>Serpme:\u003c/b> Aderans için çimento şerbetiyle ince serpme (şap) yapın.",
+        "\u003cb>Mastar anoları:\u003c/b> Şakül ve terazide mastar şeritleri oluşturun.",
+        "\u003cb>Harç çekme:\u003c/b> Kara sıva harcını mala ile ~2 cm çekip mastarlayın.",
+        "\u003cb>File (dış cephe):\u003c/b> Gerekli yerlerde sıva filesini harç içine gömün.",
+        "\u003cb>Perdah/kür:\u003c/b> Tahta mala ile perdahlayıp birkaç gün nemli kürleyin."
+      ],
+      "tips": [
+        "Dış cephede güneş/rüzgârda hızlı kuruma çatlatır; kürü ihmal etmeyin.",
+        "Tek pasoda 2 cm’i aşmayın; gerekiyorsa iki katta çekin.",
+        "Farklı malzeme (beton–tuğla) geçişlerine file şarttır."
+      ],
+      "tools": [
+        "Mala",
+        "Mastar",
+        "Şakül",
+        "Köşe profili",
+        "Sıva makinesi (ops.)"
+      ]
+    },
+    {
+      "id": "seramik",
+      "cat": "Seramik",
+      "calc": "seramik",
+      "title": "Seramik Yapıştırma ve Derz Uygulaması",
+      "excerpt": "Zemin ve duvarda çimento esaslı yapıştırıcıyla düzgün, boşluksuz seramik döşeme.",
+      "lead": "Seramiğin uzun ömürlü olması; düz zemin, doğru dişli mala ve boşluksuz yapıştırmayla başlar. Islak hacim ve dış mekânda çift taraflı yapıştırma şarttır. Derzi doğru zamanda temizlemek de yüzey görünümünü belirler. İşte sağlam bir uygulamanın adımları.",
+      "extra": "",
+      "intro": "Zemin/duvara çimento esaslı yapıştırıcıyla seramik/fayans döşeme ve derz dolgusu.",
+      "steps": [
+        "\u003cb>Zemin kontrol:\u003c/b> Yüzeyin düz, sağlam ve terazisinde olduğunu doğrulayın; gerekirse tesviye şapı.",
+        "\u003cb>Yapıştırıcı:\u003c/b> Tozu suyla topaksız karıp dinlendirin.",
+        "\u003cb>Tarama:\u003c/b> Uygun dişli mala ile yapıştırıcıyı tek yönde tarayın.",
+        "\u003cb>Döşeme:\u003c/b> Seramiği bastırıp hafif kaydırarak oturtun; çarpı/plus ile derz payı verin.",
+        "\u003cb>Terazi/hiza:\u003c/b> Her karoyu terazi ve hizada kontrol edip fazla harcı silin.",
+        "\u003cb>Derz:\u003c/b> 24 saat sonra çarpıları alıp derz dolgusunu uygulayın, süngerle temizleyin."
+      ],
+      "tips": [
+        "Islak hacim ve dış mekânda çift taraflı (sırt + zemin) yapıştırma yapın.",
+        "Büyük ebat karolarda dişli mala numarasını büyütün.",
+        "Derzi harç tam sertleşmeden temizleyin; yoksa film tabakası kalır."
+      ],
+      "tools": [
+        "Dişli mala",
+        "Karo kesme",
+        "Su terazisi",
+        "Derz süngeri",
+        "Mikser"
+      ]
+    },
+    {
+      "id": "mantolama",
+      "cat": "Mantolama",
+      "calc": "manto_eps",
+      "title": "Dış Cephe Mantolama: EPS ve Taşyünü",
+      "excerpt": "Enerji faturasını düşüren, yoğuşmayı önleyen cephe ısı yalıtımının doğru uygulaması.",
+      "lead": "Mantolama sadece levha yapıştırmak değildir; su basman profili, doğru dübel sayısı, bindirmeli file ve kür bir bütündür. EPS ekonomik ve hafif, taşyünü ise yangın (A1) ve buhar geçirgenliği açısından üstündür. Hangisini seçerseniz seçin, çatlamayan bir cephe için bu akışı izleyin.",
+      "extra": "\u003cdiv class=\"g-note\">\u003cb>EPS mi, taşyünü mü?\u003c/b> EPS daha ekonomik ve uygulaması kolaydır. Taşyünü yanmazdır (A1) ve nefes alır; yüksek binalarda ve yangın gereksinimlerinde tercih edilir, dübeli metal seçilir.\u003c/div>",
+      "intro": "Cepheye ısı yalıtım levhası + file/sıva + dekoratif kaplama uygulayarak enerji tasarrufu ve nem/yoğuşma kontrolü sağlama.",
+      "steps": [
+        "\u003cb>Su basman profili:\u003c/b> Başlangıç kotuna alüminyum start profilini terazide çakın.",
+        "\u003cb>Levha yapıştırma:\u003c/b> Yapıştırıcıyı levha sırtına çevre+nokta sürüp şaşırtmalı yapıştırın.",
+        "\u003cb>Dübelleme:\u003c/b> 24 saat sonra levha başına ~6 (taşyününde ~8) dübel çakın.",
+        "\u003cb>Donatı sıvası:\u003c/b> İlk kat harcı çekip donatı filesini bindirmeli olarak içine gömün.",
+        "\u003cb>Köşe/damlalık:\u003c/b> Köşe profili ve denizlik damlalıklarını yerleştirin.",
+        "\u003cb>Astar + kaplama:\u003c/b> Kuruyan yüzeye astar sürüp dekoratif kaplamayı desenleyerek uygulayın."
+      ],
+      "tips": [
+        "Filesiz veya az bindirmeli file çatlamaya yol açar.",
+        "Taşyünü buhar geçirgenliği yüksek, yangın sınıfı A1; dübeli metal seçin.",
+        "Son kat boya/kaplama için sıva tam kürlenmeden uygulama yapmayın."
+      ],
+      "tools": [
+        "Start profili",
+        "Dişli mala",
+        "Dübel matkabı",
+        "File makası",
+        "Mala"
+      ]
+    },
+    {
+      "id": "suYalitim",
+      "cat": "Su Yalıtımı",
+      "calc": "su_pozitif",
+      "title": "Sürme Su Yalıtımı: Pozitif, Negatif, Elastik",
+      "excerpt": "Islak hacim, teras ve temellerde su kaçağını durduran sürme membran uygulaması.",
+      "lead": "Su nereden geliyor ve hangi yönden bastırıyor? Doğru ürün seçimi buna bağlıdır. Suyla aynı yönde çalışan pozitif, ters yönde çalışan negatif; hareketli çatlaklar için tam elastik, sabit yüzeyler için yarı elastik ürünler kullanılır. Ortak uygulama adımları ve tip seçimini birlikte verdik.",
+      "extra": "\u003cdiv class=\"g-note\">\u003cb>Hangi tipi seçmeli?\u003c/b> Teras/açık alan → \u003cb>tam elastik\u003c/b>. Sabit yüzey → \u003cb>yarı elastik\u003c/b>. Dıştan su basıyor → \u003cb>pozitif\u003c/b>. İçten (bodrum/perde) basınç var → \u003cb>negatif\u003c/b> (kristalize ürün).\u003c/div>",
+      "intro": "Sürme esaslı membranla ıslak hacim, teras, temel ve perde duvarlarda su geçişini engelleme. Uygulama yönü (pozitif/negatif) ve elastikiyet ürünü belirler.",
+      "steps": [
+        "\u003cb>Yüzey hazırlığı:\u003c/b> Yüzeyi temizleyip sağlamlaştırın; keskin köşeleri pahlayın, içbükeyleri harçla yuvarlatın.",
+        "\u003cb>Astar:\u003c/b> Emici yüzeye astar sürüp kurumasını bekleyin.",
+        "\u003cb>Detay bandı:\u003c/b> Köşe ve süzgeç çevrelerine su yalıtım bandı/file yerleştirin.",
+        "\u003cb>1. kat:\u003c/b> Malzemeyi fırça/mala ile tek yönde sürün.",
+        "\u003cb>2. kat:\u003c/b> İlk kat kuruyunca dik yönde ikinci katı uygulayın (toplam sarfiyata dikkat).",
+        "\u003cb>Test/koruma:\u003c/b> Su testi yapın; üstüne şap/seramik gelecekse koruma süresine uyun."
+      ],
+      "tips": [
+        "Terasta hareketli çatlaklar için tam elastik ürün seçin.",
+        "Negatif (iç) uygulamada su basıncına dayanıklı kristalize ürün kullanın.",
+        "Köşe detayları en sık su alan yerdir; bandı ihmal etmeyin."
+      ],
+      "tools": [
+        "Fırça/rulo",
+        "Mala",
+        "Karıştırıcı",
+        "Su yalıtım bandı"
+      ]
+    },
+    {
+      "id": "boyaIc",
+      "cat": "Boya",
+      "calc": "boya_ic",
+      "title": "İç Cephe Boya",
+      "excerpt": "Astar + iki kat boya ile leke geçirmeyen, düzgün iç mekân yüzeyleri.",
+      "lead": "İyi bir iç cephe boyası, hazırlıkla başlar: macun, zımpara ve mutlaka astar. Astarı atlamak sarfiyatı artırır ve alttan leke geçirir. Kat aralarını beklemek, iz bırakmayan düzgün bir yüzeyin sırrıdır. İşte temiz bir sonuç için sıralı adımlar.",
+      "extra": "",
+      "intro": "İç mekân duvar/tavanların astar + son kat boya ile bitirilmesi.",
+      "steps": [
+        "\u003cb>Hazırlık:\u003c/b> Mobilya/zemini örtün; çatlak ve boşlukları macunla doldurun.",
+        "\u003cb>Zımpara:\u003c/b> Yüzeyi zımparalayıp tozunu alın.",
+        "\u003cb>Astar:\u003c/b> Emici/leke yapan yüzeye astar sürün.",
+        "\u003cb>1. kat:\u003c/b> Boyayı köşelerden fırça, geniş alanda rulo ile çekin.",
+        "\u003cb>2. kat:\u003c/b> Kuruma süresine uyup ikinci katı atın.",
+        "\u003cb>Kontrol:\u003c/b> Işığa karşı iz/geçiş kontrolü yapıp rötuş atın."
+      ],
+      "tips": [
+        "Astarsız direkt boya sarfiyatı artırır ve leke geçirir.",
+        "Rulo tüy boyunu yüzeye göre seçin (düz duvar için kısa tüy).",
+        "Kat aralarını beklemeden ikinci kat iz bırakır."
+      ],
+      "tools": [
+        "Rulo",
+        "Fırça",
+        "Macun/spatula",
+        "Zımpara",
+        "Maskeleme bandı"
+      ]
+    },
+    {
+      "id": "boyaDis",
+      "cat": "Boya",
+      "calc": "boya_dis",
+      "title": "Dış Cephe Boya",
+      "excerpt": "Silikon esaslı astar + boya ile hava koşullarına dayanıklı, su itici cephe.",
+      "lead": "Dış cephe boyası yağmura, güneşe ve neme karşı ilk savunma hattıdır. Silikonlu ürünler su itmesine rağmen nefes alır. Doğru hava koşulu ve ıslak kenar bırakmadan çalışmak, ek izi olmayan homojen bir cephe için kritiktir.",
+      "extra": "",
+      "intro": "Dış cephede silikon esaslı astar + boya ile hava koşullarına dayanıklı, su itici yüzey elde etme.",
+      "steps": [
+        "\u003cb>Yüzey onarımı:\u003c/b> Kabaran eski boyayı ve gevşek sıvayı temizleyip çatlakları onarın.",
+        "\u003cb>Astar:\u003c/b> Dış cephe astarını sürüp kurumasını bekleyin.",
+        "\u003cb>Detay:\u003c/b> Denizlik/damlalık ve derz detaylarını kontrol edin.",
+        "\u003cb>1. kat:\u003c/b> Boyayı üstten aşağı, ıslak kenar bırakmadan çekin.",
+        "\u003cb>2. kat:\u003c/b> Kuruma sonrası ikinci katı uygulayın.",
+        "\u003cb>Kontrol:\u003c/b> Ek yeri/geçişleri gün ışığında kontrol edin."
+      ],
+      "tips": [
+        "Doğrudan güneş ve yağmurda uygulama yapmayın.",
+        "Silikonlu boya su iticidir ama nefes alır; nemli cephede tercih edin.",
+        "Renk tutarlılığı için aynı parti (lot) boyayı karıştırıp kullanın."
+      ],
+      "tools": [
+        "Rulo",
+        "Fırça",
+        "İskele/sepet",
+        "Astar",
+        "Spatula"
+      ]
+    },
+    {
+      "id": "boyaCizgi",
+      "cat": "Boya",
+      "calc": "boya_cizgi",
+      "title": "Otopark ve Yol Çizgi Boyası",
+      "excerpt": "Otopark, yol ve depo zeminlerinde kalıcı, net trafik çizgileri ve alan işaretleme.",
+      "lead": "Zemin çizgilerinin trafiğe ve aşınmaya dayanması; temiz, kuru zemin ve doğru boya kalınlığına bağlıdır. Şablon ve maskeleme ile keskin kenarlar, ikinci kat ile dayanım elde edilir. İşaretlemeyi kalıcı kılmanın adımlarını topladık.",
+      "extra": "",
+      "intro": "Otopark, yol ve depo zeminlerinde trafik/çizgi boyasıyla yönlendirme ve alan işaretleme.",
+      "steps": [
+        "\u003cb>Zemin temizliği:\u003c/b> Yüzeyi süpürüp yağ/tozdan arındırın; gerekirse basınçlı yıkayın.",
+        "\u003cb>Ölçü/şablon:\u003c/b> Çizgi hattını şerit metre ve iple çıkarıp maskeleme bandıyla sınırlayın.",
+        "\u003cb>Astar (ops.):\u003c/b> Gözenekli zemine astar veya inceltilmiş ilk kat sürün.",
+        "\u003cb>Uygulama:\u003c/b> Çizgi boyasını fırça, rulo veya çizgi makinesiyle çekin.",
+        "\u003cb>2. kat:\u003c/b> Trafik yoğun alanda ikinci kat dayanımı artırır.",
+        "\u003cb>Kuruma:\u003c/b> Bandı boya yaşken alın; trafiği tam kuruyana dek kapatın."
+      ],
+      "tips": [
+        "Nemli/soğuk zeminde boya tutmaz; kuru ve >10°C’de çalışın.",
+        "Yansıtıcı istenirse cam küreyi yaş boyaya serpin.",
+        "İnceltmeyi ürün talimatına göre yapın; fazla tiner dayanımı düşürür."
+      ],
+      "tools": [
+        "Çizgi makinesi/rulo",
+        "Maskeleme bandı",
+        "Şerit metre",
+        "İp",
+        "Süpürge"
+      ]
+    },
+    {
+      "id": "gazbeton",
+      "cat": "Duvar",
+      "calc": "gazbeton",
+      "title": "Gaz Beton Duvar Örgüsü",
+      "excerpt": "Hafif, yalıtımlı bloklarla ince harç kullanarak hızlı ve düzgün duvar örme.",
+      "lead": "Gaz beton; hafifliği, ısı yalıtımı ve hızlı örülmesiyle bölme/dolgu duvarlarda öne çıkar. İnce yapıştırma harcıyla örülür, ama bunun için ilk sıranın terazisi ve blok yüzeyinin düzgünlüğü şarttır. Kalın harç yalıtımı bozar. Doğru örgünün adımları burada.",
+      "extra": "",
+      "intro": "Hafif, yalıtımlı gaz beton bloklarla ince yapıştırma harcı kullanarak hızlı bölme/dolgu duvar örme.",
+      "steps": [
+        "\u003cb>İlk sıra:\u003c/b> Terazide harç yatağına ilk sırayı özenle örün (duvarın karesi buna bağlı).",
+        "\u003cb>Yapıştırma harcı:\u003c/b> İnce harcı dişli mala ile yatay ve düşey yüzeye sürün.",
+        "\u003cb>Örgü:\u003c/b> Blokları şaşırtmalı (yarım blok) dizip lastik tokmakla oturtun.",
+        "\u003cb>Terazi kontrol:\u003c/b> Her sırada şakül ve terazi kontrolü yapın.",
+        "\u003cb>Bağlantı:\u003c/b> Gerekli yerlerde lento ve taşıyıcıya kelepçe bağlantısı yapın.",
+        "\u003cb>Tesisat:\u003c/b> Kanal açma aletiyle tesisat yuvalarını açın."
+      ],
+      "tips": [
+        "İnce harç için blok yüzeyi düzgün olmalı; çapakları rendeyle alın.",
+        "Kalın harçla örmek yalıtımı ve düzgünlüğü bozar.",
+        "Kesim için gazbeton testeresi kullanın; hızlı ve düzgün keser."
+      ],
+      "tools": [
+        "Dişli mala",
+        "Lastik tokmak",
+        "Gazbeton testeresi",
+        "Rende",
+        "Su terazisi"
+      ]
+    },
+    {
+      "id": "tugla",
+      "cat": "Duvar",
+      "calc": "tugla",
+      "title": "Tuğla Duvar Örgüsü",
+      "excerpt": "Delikli tuğla ve harçla klasik, sağlam bölme/dolgu duvar örgüsünün temelleri.",
+      "lead": "Tuğla duvarın düzgün ve sağlam olması; ilk sıranın terazisine, sabit derz kalınlığına ve doğru harç kıvamına bağlıdır. Tuğlayı ıslatmak, harcın erken kurumasını önler. Şaşırtmalı örgü ve düzenli kontrol ile sağlam bir duvar örmenin yolunu anlattık.",
+      "extra": "",
+      "intro": "Delikli tuğla ve çimento-kum harcıyla klasik bölme/dolgu duvar örgüsü.",
+      "steps": [
+        "\u003cb>Kuru dizi:\u003c/b> İlk sırayı harçsız dizip kapı/pencere paylarını ayarlayın.",
+        "\u003cb>Harç:\u003c/b> Çimento-kum (ya da hazır) harcını kıvamında hazırlayın.",
+        "\u003cb>İlk sıra:\u003c/b> Terazi ve şakülle ilk sırayı harç yatağına örün.",
+        "\u003cb>Örgü:\u003c/b> Tuğlaları şaşırtmalı örüp derz kalınlığını ~1–1,5 cm sabit tutun.",
+        "\u003cb>Kontrol:\u003c/b> Her 3–4 sırada terazi/şakül ve gönye kontrolü yapın.",
+        "\u003cb>Bağlantı/lento:\u003c/b> Kolon–duvar bağlantısı ve boşluk üstlerine lento yapın."
+      ],
+      "tips": [
+        "Tuğlayı örgüden önce ıslatın; kuru tuğla harcın suyunu çeker.",
+        "Harç kıvamı önemli; çok sulu harç duvarı oynatır.",
+        "Uzun duvarlarda düşey hareket derzi bırakın."
+      ],
+      "tools": [
+        "Mala",
+        "Çekül/şakül",
+        "Su terazisi",
+        "Tuğla çekici",
+        "İp"
+      ]
+    },
+    {
+      "id": "klinker",
+      "cat": "Duvar",
+      "calc": "klinker",
+      "title": "Klinker Tuğla ile Cephe Kaplama",
+      "excerpt": "Dekoratif ve dayanıklı klinker kaplamayla düşük bakımlı, uzun ömürlü cephe.",
+      "lead": "Klinker; dona, aşınmaya ve renk solmasına dirençli, bakımı düşük bir cephe kaplamasıdır. Sağlam bir sonuç için donaya dayanıklı yapıştırıcı, çift taraflı yapıştırma ve temiz derz doldurma gerekir. Cephenizi yıllarca taşıyacak uygulamanın adımları aşağıda.",
+      "extra": "",
+      "intro": "İnce klinker tuğlalarla cephe kaplama; dekoratif, dayanıklı ve düşük bakımlı dış yüzey.",
+      "steps": [
+        "\u003cb>Yüzey hazırlığı:\u003c/b> Cepheyi sağlamlaştırıp gerekirse astar/serpme ile aderans verin.",
+        "\u003cb>Ölçü/dizilim:\u003c/b> Sıra yüksekliği ve derz payını hesaplayıp başlangıç çıtasını terazide sabitleyin.",
+        "\u003cb>Yapıştırıcı:\u003c/b> Çimento esaslı klinker yapıştırıcısını dişli mala ile sürün.",
+        "\u003cb>Döşeme:\u003c/b> Klinkerleri şaşırtmalı bastırıp derz payıyla dizin.",
+        "\u003cb>Terazi/hiza:\u003c/b> Sık sık terazi, gönye ve derz hizasını kontrol edin.",
+        "\u003cb>Derz:\u003c/b> Yapıştırıcı priz aldıktan sonra klinker derz harcını doldurup düzeltin."
+      ],
+      "tips": [
+        "Dış mekân olduğu için donma-çözülmeye dayanıklı yapıştırıcı/derz seçin.",
+        "Çift taraflı yapıştırma (sırt+yüzey) düşme riskini azaltır.",
+        "Derzi yüzeye bulaştırmadan doldurun; klinker yüzeyi temizlemek zordur."
+      ],
+      "tools": [
+        "Dişli mala",
+        "Derz torbası",
+        "Su terazisi",
+        "Klinker kesme",
+        "İp"
+      ]
+    }
+  ]
 };
 
 /* ============ DURUM & KALICILIK ============ */
 const LS='yapiHesap_v2';
+function _hash(s){ let h=5381,i=s.length; while(i)h=(h*33)^s.charCodeAt(--i); return (h>>>0).toString(36); }
+const BASE_SIG=_hash(JSON.stringify(DEFAULT_DB));
 let DB, current=null, isAdmin=false, adminUnlocked=false, adminSubTab='calc';
 function clone(o){ return JSON.parse(JSON.stringify(o)); }
 function loadDB(){
-  DB=clone(DEFAULT_DB);
-  try{ const s=JSON.parse(localStorage.getItem(LS)||'null'); if(s&&s.calcs&&s.articles){ DB=s; if(!DB.admin)DB.admin={pass:'admin1234'}; if(!DB.globals)DB.globals={cur:'₺',kdv:20,labor:0,whatsapp:'905326118880'}; if(DB.globals.whatsapp===undefined)DB.globals.whatsapp='905326118880'; if(!DB.catColors)DB.catColors=clone(DEFAULT_DB.catColors); if(!Array.isArray(DB.ads))DB.ads=[]; } }catch(e){}
+  DB=clone(DEFAULT_DB); DB._sig=BASE_SIG;
+  try{ const s=JSON.parse(localStorage.getItem(LS)||'null');
+    if(s&&s.calcs&&s.articles){
+      if(s._sig===BASE_SIG){
+        DB=s;
+        if(!DB.admin)DB.admin={pass:'admin1234'};
+        if(!DB.globals)DB.globals=clone(DEFAULT_DB.globals);
+        if(DB.globals.whatsapp===undefined)DB.globals.whatsapp=(DEFAULT_DB.globals.whatsapp||'');
+        if(!DB.catColors)DB.catColors=clone(DEFAULT_DB.catColors);
+        if(!Array.isArray(DB.ads))DB.ads=[];
+        DB._sig=BASE_SIG;
+      } else {
+        /* Yeni yayınlanan içerik: gömülü veriyi benimse, eski yerel veriyi bırak */
+        DB=clone(DEFAULT_DB); DB._sig=BASE_SIG;
+        try{ localStorage.setItem(LS,JSON.stringify(DB)); }catch(e){}
+      }
+    }
+  }catch(e){}
 }
-function saveDB(){ try{ localStorage.setItem(LS,JSON.stringify(DB)); }catch(e){} }
+function saveDB(){ try{ DB._sig=BASE_SIG; localStorage.setItem(LS,JSON.stringify(DB)); }catch(e){} }
 function calcById(id){ return DB.calcs.find(c=>c.id===id); }
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -1643,7 +3222,8 @@ function delAd(idx,fromEditor){
 
 /* ============ ADMIN: YEDEK & AYAR ============ */
 function exportDB(){
-  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const out=clone(DB); delete out._sig;
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='yapi-veri.json'; document.body.appendChild(a); a.click(); a.remove();
 }
 function importDB(input){
