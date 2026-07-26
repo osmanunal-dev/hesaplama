@@ -299,6 +299,10 @@
   .ad-item img{max-height:38px;max-width:160px;width:auto;object-fit:contain;display:block}
   a.ad-item{cursor:pointer;transition:opacity .15s}
   a.ad-item:hover{opacity:.72}
+  .ad-item-text{padding:0 4px}
+  .ad-text{font-family:'Archivo',sans-serif;font-weight:700;font-size:15px;color:var(--ink);white-space:nowrap;letter-spacing:-.01em}
+  a.ad-item-text .ad-text{color:var(--teal-d)}
+  a.ad-item-text:hover .ad-text{text-decoration:underline;opacity:1}
   @media(max-width:560px){.adbar-track{gap:30px;padding-left:78px}.ad-item{height:32px}.ad-item img{max-height:32px;max-width:120px}}
   @media print{.adbar{display:none!important}}
   #btnLock.admin-on{border-color:var(--teal);color:var(--teal-d);background:var(--teal-wash)}
@@ -334,6 +338,7 @@
   .btn-mini{padding:7px 12px;font-size:12.5px}
   .ad-thumb{width:84px;height:44px;flex:none;border:1px solid var(--line-2);border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
   .ad-thumb img{max-width:100%;max-height:100%;object-fit:contain}
+  .ad-thumb-text{font-family:'Archivo',sans-serif;font-weight:800;font-size:14px;color:var(--teal-d);text-transform:uppercase}
   .ad-prev{border:1px solid var(--line);border-radius:10px;background:#fff;padding:12px;display:flex;align-items:center;justify-content:center;min-height:70px;margin-bottom:10px}
   .ad-prev img{max-height:70px;max-width:100%;object-fit:contain}
   .ad-prev.empty{color:var(--muted);font-size:12.5px;border-style:dashed}
@@ -1369,8 +1374,9 @@ function buildAdminLists(){
     if(!(DB.ads||[]).length){ dl.innerHTML='<div class="cp-empty">Henüz reklam eklenmedi.</div>'; }
     (DB.ads||[]).forEach((a,i)=>{
       const it=document.createElement('div'); it.className='admin-item';
-      it.innerHTML=`<div class="ad-thumb"><img src="${esc(a.img)}" alt=""></div>
-        <div class="ai-main"><div class="ai-title">${esc(a.name||'(isimsiz)')}</div><div class="ai-meta">${a.link?('<span class="pill">bağlantılı</span>'+esc(a.link)):'bağlantı yok'}</div></div>
+      const thumb = a.img ? `<div class="ad-thumb"><img src="${esc(a.img)}" alt=""></div>` : `<div class="ad-thumb ad-thumb-text">${esc((a.name||adDomain(a.link)||'Aa').slice(0,3))}</div>`;
+      it.innerHTML=`${thumb}
+        <div class="ai-main"><div class="ai-title">${esc(a.name||adDomain(a.link)||'(isimsiz)')}</div><div class="ai-meta">${a.link?('<span class="pill">'+esc(adDomain(a.link))+'</span>'+(a.img?'logolu':'yazı reklam')):(a.img?'logolu, bağlantısız':'bağlantı yok')}</div></div>
         <div class="ai-actions"><button class="btn btn-out btn-mini" onclick="editAd(${i})">Düzenle</button><button class="btn btn-danger btn-mini" onclick="delAd(${i})">Sil</button></div>`;
       dl.appendChild(it);
     });
@@ -1603,21 +1609,24 @@ function editAd(idx){
   document.getElementById('editorDelete').style.display=isNew?'none':'';
   document.getElementById('editorCopy').style.display='none'; _copy=null;
   document.getElementById('editorBody').innerHTML=`
-    <div class="ed-field"><label>Logo Önizleme</label><div id="adPrev" class="ad-prev empty">Önizleme burada görünür</div></div>
+    <div class="ed-field"><label>Web Adresi (bağlantı)</label><input type="text" id="adLink" value="${esc(a.link||'')}" placeholder="firma-adresi.com — tıklanınca açılır"></div>
+    <div class="ed-field"><label>İsim / Firma</label><input type="text" id="adName" value="${esc(a.name||'')}" placeholder="Logo yoksa yazı olarak gösterilir"></div>
+    <div class="ed-field"><label>Logo (opsiyonel)</label><div id="adPrev" class="ad-prev empty">Önizleme burada görünür</div></div>
     <div class="ed-row c2">
       <div class="ed-field"><label>Dosyadan Yükle</label><label class="btn btn-out ad-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Görsel Seç<input type="file" accept="image/*" style="display:none" onchange="readAdImage(this)"></label></div>
       <div class="ed-field"><label>veya Görsel URL</label><input type="text" id="adImgUrl" value="${esc(a.img&&!/^data:/.test(a.img)?a.img:'')}" placeholder="https://…/logo.png" oninput="document.getElementById('adImgData').value='';updateAdPreview(this.value.trim())"></div>
     </div>
     <input type="hidden" id="adImgData" value="${esc(a.img&&/^data:/.test(a.img)?a.img:'')}">
-    <div class="ed-field"><label>Bağlantı (opsiyonel)</label><input type="text" id="adLink" value="${esc(a.link||'')}" placeholder="https://firma-adresi.com"></div>
-    <div class="ed-field"><label>İsim / Firma (opsiyonel)</label><input type="text" id="adName" value="${esc(a.name||'')}" placeholder="Reklam veren adı"></div>`;
+    <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-top:2px">Logo eklemezseniz, girdiğiniz <b>web adresi ya da isim</b> yazı olarak kayan şeritte gösterilir ve tıklanınca siteye gider.</p>`;
   updateAdPreview(a.img||'');
   _del = isNew?null:()=>delAd(idx,true);
   _save = ()=>{
     const url=document.getElementById('adImgUrl').value.trim(), data=document.getElementById('adImgData').value;
     const img=url||data;
-    if(!img){ alert('Bir logo görseli yükleyin veya URL girin.'); return; }
-    const obj={ img, link:document.getElementById('adLink').value.trim(), name:document.getElementById('adName').value.trim() };
+    const link=document.getElementById('adLink').value.trim();
+    const name=document.getElementById('adName').value.trim();
+    if(!img && !link && !name){ alert('En az bir web adresi, isim veya logo girin.'); return; }
+    const obj={ img, link, name };
     if(isNew){ if(!Array.isArray(DB.ads))DB.ads=[]; DB.ads.push(obj); } else DB.ads[idx]=obj;
     let saved=true; try{ localStorage.setItem(LS,JSON.stringify(DB)); }catch(e){ saved=false; }
     if(!saved) alert('Uyarı: Görsel tarayıcı hafızasına sığmadı (muhtemelen çok büyük). Daha küçük bir logo kullanın ya da bir Görsel URL girin. Reklam bu oturumda görünür ama kalıcı olmayabilir.');
@@ -1647,13 +1656,19 @@ function changePass(){ const v=document.getElementById('apNew').value.trim(); if
 function factoryReset(){ if(!confirm('TÜM içerik, fiyat ve makaleler silinip varsayılana dönecek. Emin misiniz?'))return; try{localStorage.removeItem(LS);}catch(e){} loadDB(); rebuildAll(); alert('Varsayılana sıfırlandı.'); }
 
 /* ============ REKLAM ŞERİDİ ============ */
+function adHref(u){ u=(u||'').trim(); if(!u)return ''; return /^https?:\/\//i.test(u)?u:'https://'+u; }
+function adDomain(u){ try{ return new URL(adHref(u)).hostname.replace(/^www\./,''); }catch(e){ return (u||'').replace(/^https?:\/\//i,'').replace(/^www\./,'').split('/')[0]; } }
 function adItemHTML(a){
-  const img=`<img src="${esc(a.img)}" alt="${esc(a.name||'reklam')}" loading="lazy">`;
-  return a.link ? `<a class="ad-item" href="${esc(a.link)}" target="_blank" rel="noopener nofollow sponsored">${img}</a>` : `<span class="ad-item">${img}</span>`;
+  const inner = a.img
+    ? `<img src="${esc(a.img)}" alt="${esc(a.name||'reklam')}" loading="lazy">`
+    : `<span class="ad-text">${esc(a.name||adDomain(a.link)||'Reklam')}</span>`;
+  const cls='ad-item'+(a.img?'':' ad-item-text');
+  if(a.link){ return `<a class="${cls}" href="${esc(adHref(a.link))}" target="_blank" rel="noopener nofollow sponsored">${inner}</a>`; }
+  return `<span class="${cls}">${inner}</span>`;
 }
 function buildAds(){
   const bar=document.getElementById('adBar'), track=document.getElementById('adTrack');
-  const ads=(DB.ads||[]).filter(a=>a&&a.img);
+  const ads=(DB.ads||[]).filter(a=>a&&(a.img||a.link||a.name));
   if(!ads.length){ bar.style.display='none'; track.innerHTML=''; return; }
   const reps=Math.max(2,Math.ceil(8/ads.length));
   let one=''; for(let r=0;r<reps;r++) ads.forEach(a=>{ one+=adItemHTML(a); });
