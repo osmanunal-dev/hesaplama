@@ -3236,12 +3236,14 @@ function changePass(){ const v=document.getElementById('apNew').value.trim(); if
 function factoryReset(){ if(!confirm('TÜM içerik, fiyat ve makaleler silinip varsayılana dönecek. Emin misiniz?'))return; try{localStorage.removeItem(LS);}catch(e){} loadDB(); rebuildAll(); alert('Varsayılana sıfırlandı.'); }
 
 /* ============ REKLAM ŞERİDİ ============ */
+function adImgFail(img){ try{ const s=document.createElement('span'); s.className='ad-text'; s.textContent=img.getAttribute('alt')||'Reklam'; img.replaceWith(s); }catch(e){} }
 function adHref(u){ u=(u||'').trim(); if(!u)return ''; return /^https?:\/\//i.test(u)?u:'https://'+u; }
 function adDomain(u){ try{ return new URL(adHref(u)).hostname.replace(/^www\./,''); }catch(e){ return (u||'').replace(/^https?:\/\//i,'').replace(/^www\./,'').split('/')[0]; } }
 function adItemHTML(a){
+  const fb = a.name||adDomain(a.link)||'Reklam';
   const inner = a.img
-    ? `<img src="${esc(a.img)}" alt="${esc(a.name||'reklam')}" loading="lazy">`
-    : `<span class="ad-text">${esc(a.name||adDomain(a.link)||'Reklam')}</span>`;
+    ? `<img src="${esc(a.img)}" alt="${esc(fb)}" onerror="adImgFail(this)">`
+    : `<span class="ad-text">${esc(fb)}</span>`;
   const cls='ad-item'+(a.img?'':' ad-item-text');
   if(a.link){ return `<a class="${cls}" href="${esc(adHref(a.link))}" target="_blank" rel="noopener nofollow sponsored">${inner}</a>`; }
   return `<span class="${cls}">${inner}</span>`;
