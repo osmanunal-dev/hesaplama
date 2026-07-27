@@ -290,20 +290,25 @@
   .btn-wa svg{width:16px;height:16px}
 
   /* ---- reklam şeridi ---- */
-  .adbar{position:relative;overflow:hidden;background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-  .adbar-label{position:absolute;left:0;top:0;bottom:0;z-index:2;display:flex;align-items:center;padding:0 14px;background:var(--surface);border-right:1px solid var(--line);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);box-shadow:6px 0 8px -4px rgba(22,32,43,.12)}
-  .adbar-track{display:flex;align-items:center;gap:44px;width:max-content;padding:12px 24px 12px 90px;animation:admarq 30s linear infinite}
-  .adbar:hover .adbar-track{animation-play-state:paused}
-  @keyframes admarq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-  .ad-item{display:flex;align-items:center;justify-content:center;height:38px;flex:none}
-  .ad-item img{max-height:38px;max-width:160px;width:auto;object-fit:contain;display:block}
+  .adbar{position:relative;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:stretch;height:60px;overflow:hidden}
+  @media(max-width:560px){.adbar{height:52px}}
+  .adbar-label{flex:none;display:flex;align-items:center;padding:0 13px;border-right:1px solid var(--line);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .ad-nav{flex:none;width:36px;background:none;border:none;cursor:pointer;font-size:24px;line-height:1;color:var(--muted);transition:.15s;display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif}
+  .ad-nav:hover{color:var(--teal-d);background:var(--paper)}
+  .ad-stage{flex:1;overflow:hidden;position:relative}
+  .ad-slides{display:flex;height:100%;transition:transform .35s ease;will-change:transform;touch-action:pan-y;cursor:grab}
+  .ad-slides:active{cursor:grabbing}
+  .ad-slide{flex:0 0 100%;display:flex;align-items:center;justify-content:center;height:100%;padding:8px 10px;user-select:none}
+  .ad-item{display:flex;align-items:center;justify-content:center;max-width:100%}
+  .ad-item img{max-height:40px;max-width:220px;width:auto;object-fit:contain;display:block;-webkit-user-drag:none;user-select:none;pointer-events:none}
+  a.ad-item img{pointer-events:auto}
   a.ad-item{cursor:pointer;transition:opacity .15s}
   a.ad-item:hover{opacity:.72}
   .ad-item-text{padding:0 4px}
-  .ad-text{font-family:'Archivo',sans-serif;font-weight:700;font-size:15px;color:var(--ink);white-space:nowrap;letter-spacing:-.01em}
+  .ad-text{font-family:'Archivo',sans-serif;font-weight:700;font-size:16px;color:var(--ink);white-space:nowrap;letter-spacing:-.01em}
   a.ad-item-text .ad-text{color:var(--teal-d)}
   a.ad-item-text:hover .ad-text{text-decoration:underline;opacity:1}
-  @media(max-width:560px){.adbar-track{gap:30px;padding-left:78px}.ad-item{height:32px}.ad-item img{max-height:32px;max-width:120px}}
+  @media(max-width:560px){.ad-item img{max-height:34px;max-width:160px}.ad-nav{width:30px;font-size:20px}.adbar-label{padding:0 9px;font-size:9px}}
   @media print{.adbar{display:none!important}}
   #btnLock.admin-on{border-color:var(--teal);color:var(--teal-d);background:var(--teal-wash)}
   .modal-sm{max-width:420px}
@@ -401,7 +406,8 @@
   footer.foot{margin-top:auto;border-top:1px solid var(--line);background:var(--surface)}
   .foot-in{max-width:1320px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
   .foot-in b{color:var(--ink-2)}
-  .foot-in .rt{margin-left:auto}
+  .foot-in .rt{margin-left:auto;color:var(--muted);text-decoration:none;transition:color .15s}
+  a.rt:hover{color:var(--teal-d);text-decoration:underline}
 
   /* print */
   @media print{
@@ -466,6 +472,13 @@
       </button>
     </div>
   </div>
+</div>
+
+<div class="adbar" id="adBar" style="display:none">
+  <div class="adbar-label">Reklam</div>
+  <button class="ad-nav" id="adPrev" onclick="adNav(-1)" aria-label="Önceki reklam">‹</button>
+  <div class="ad-stage" id="adStage"><div class="ad-slides" id="adSlides"></div></div>
+  <button class="ad-nav" id="adNext" onclick="adNav(1)" aria-label="Sonraki reklam">›</button>
 </div>
 
 <div class="wrap" id="viewCalc">
@@ -756,15 +769,10 @@
   </div>
 </div>
 
-<div class="adbar" id="adBar" style="display:none">
-  <div class="adbar-label">Reklam</div>
-  <div class="adbar-track" id="adTrack"></div>
-</div>
-
 <footer class="foot">
   <div class="foot-in">
     <b>Yapı Maliyet & Analiz</b> · Metraj ve birim fiyat analizi aracı
-    <span class="rt">© <span id="yr"></span> · OUN Software</span>
+    <a class="rt" href="mailto:osman.unal@ounsoft.com?subject=Yapı%20Maliyet%20%26%20Analiz" title="İletişim: osman.unal@ounsoft.com">© <span id="yr"></span> · OUN Software</a>
   </div>
 </footer>
 
@@ -3250,16 +3258,27 @@ function adItemHTML(a){
   return `<span class="${cls}">${inner}</span>`;
 }
 function adsPresent(){ return (DB.ads||[]).some(a=>a&&(a.img||a.link||a.name)); }
-function updateAdBar(){ const t=document.querySelector('.tab.active'); const active=t?t.dataset.tab:'calc'; document.getElementById('adBar').style.display=(adsPresent()&&active!=='admin')?'':'none'; }
+let adList=[], adIndex=0, adTimer=null;
+function setAdPos(anim){ const s=document.getElementById('adSlides'); if(!s)return; s.style.transition=anim?'':'none'; s.style.transform='translateX('+(-adIndex*100)+'%)'; }
+function stopAdAuto(){ if(adTimer){ clearInterval(adTimer); adTimer=null; } }
+function startAdAuto(){ stopAdAuto(); if(adList.length>1 && document.getElementById('adBar').style.display!=='none') adTimer=setInterval(()=>adNav(1),4500); }
+function adNav(dir){ if(adList.length<2)return; adIndex=(adIndex+dir+adList.length)%adList.length; setAdPos(true); startAdAuto(); }
+function updateAdBar(){
+  const t=document.querySelector('.tab.active'); const active=t?t.dataset.tab:'calc';
+  const show=adsPresent()&&active!=='admin';
+  document.getElementById('adBar').style.display=show?'':'none';
+  if(show) startAdAuto(); else stopAdAuto();
+}
 function buildAds(){
-  const track=document.getElementById('adTrack');
-  const ads=(DB.ads||[]).filter(a=>a&&(a.img||a.link||a.name));
-  if(!ads.length){ track.innerHTML=''; updateAdBar(); return; }
-  const reps=Math.max(2,Math.ceil(8/ads.length));
-  let one=''; for(let r=0;r<reps;r++) ads.forEach(a=>{ one+=adItemHTML(a); });
-  track.innerHTML=one+one;
-  const count=ads.length*reps;
-  track.style.animationDuration=Math.max(18,count*3.5)+'s';
+  adList=(DB.ads||[]).filter(a=>a&&(a.img||a.link||a.name));
+  const slides=document.getElementById('adSlides');
+  if(!adList.length){ if(slides)slides.innerHTML=''; updateAdBar(); return; }
+  if(adIndex>=adList.length) adIndex=0;
+  slides.innerHTML=adList.map(a=>`<div class="ad-slide">${adItemHTML(a)}</div>`).join('');
+  setAdPos(false);
+  const multi=adList.length>1;
+  document.getElementById('adPrev').style.display=multi?'':'none';
+  document.getElementById('adNext').style.display=multi?'':'none';
   updateAdBar();
 }
 
@@ -3278,6 +3297,27 @@ try{ const s=((location.hash||'')+' '+(location.search||'')).toLowerCase(); if(/
 updateLockUI();
 if(adminUnlocked && !isAdmin) openLogin();
 (function(){ const el=document.querySelector('.brand'); if(!el)return; let taps=0,tt=null; el.addEventListener('click',()=>{ taps++; clearTimeout(tt); tt=setTimeout(()=>{taps=0;},1500); if(taps>=5){ taps=0; adminUnlocked=true; updateLockUI(); if(!isAdmin)openLogin(); } }); })();
+
+/* Reklam carousel: elle kaydırma + hover durdurma */
+(function(){
+  const bar=document.getElementById('adBar'), stage=document.getElementById('adStage'), slides=document.getElementById('adSlides');
+  if(!stage||!slides)return;
+  let dragging=false, startX=0, dx=0, w=0, moved=false;
+  const getX=e=>e.touches&&e.touches.length?e.touches[0].clientX:e.clientX;
+  const down=e=>{ if(adList.length<2)return; dragging=true; moved=false; startX=getX(e); w=stage.clientWidth||1; dx=0; slides.style.transition='none'; stopAdAuto(); };
+  const move=e=>{ if(!dragging)return; dx=getX(e)-startX; if(Math.abs(dx)>4)moved=true; slides.style.transform='translateX(calc('+(-adIndex*100)+'% + '+dx+'px))'; };
+  const up=()=>{ if(!dragging)return; dragging=false; slides.style.transition=''; if(Math.abs(dx)>w*0.15){ adNav(dx<0?1:-1); } else { setAdPos(true); startAdAuto(); } dx=0; };
+  stage.addEventListener('mousedown',down);
+  window.addEventListener('mousemove',move);
+  window.addEventListener('mouseup',up);
+  stage.addEventListener('touchstart',down,{passive:true});
+  stage.addEventListener('touchmove',move,{passive:true});
+  stage.addEventListener('touchend',up);
+  // sürükleme sırasında bağlantının yanlışlıkla açılmasını engelle
+  slides.addEventListener('click',e=>{ if(moved){ e.preventDefault(); e.stopPropagation(); moved=false; } },true);
+  bar.addEventListener('mouseenter',stopAdAuto);
+  bar.addEventListener('mouseleave',startAdAuto);
+})();
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){ closeSettings(); closeLogin(); }});
 
 </script>
