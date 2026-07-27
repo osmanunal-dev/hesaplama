@@ -184,6 +184,8 @@
   table.boq td.total{color:var(--teal-d);font-weight:700}
   .price-edit{width:88px;font-family:'JetBrains Mono';font-weight:600;font-size:13px;text-align:right;border:1px solid var(--line);border-radius:6px;padding:5px 7px;background:#fff;color:var(--ink)}
   .price-edit:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 2px var(--teal-wash)}
+  .labor-edit{width:66px;font-family:'JetBrains Mono';font-weight:700;font-size:13px;text-align:right;border:1px solid var(--line);border-radius:6px;padding:3px 6px;background:#fff;color:var(--ink);vertical-align:middle}
+  .labor-edit:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 2px var(--teal-wash)}
 
   tfoot td{padding:10px 14px;font-size:13.5px}
   tfoot .lbl{text-align:right;color:var(--ink-2);font-weight:600}
@@ -412,16 +414,28 @@
   /* print */
   @media print{
     body{background:#fff;background-image:none}
-    header.top,aside,.opts,.card-h .tag,footer.foot,.no-print{display:none!important}
+    header.top,aside,.opts,.card-h .tag,footer.foot,.adbar,.tabbar,.breadcrumb,.measure-card,#placeholder,.no-print{display:none!important}
     .wrap{display:block;padding:0;max-width:100%}
     .card{border:none;box-shadow:none}
     #result.show{display:block!important}
     .print-head{display:block!important}
+    .print-only{display:inline!important}
+    .print-block{display:block!important}
+    table.boq td.r,table.boq th.r,.summary .v,tfoot .val,tfoot .lbl{white-space:nowrap!important}
     table.boq th{position:static}
   }
   .print-head{display:none;padding:0 0 12px;border-bottom:2px solid var(--ink);margin-bottom:14px}
   .print-head h2{font-family:'Archivo';font-size:20px}
   .print-head .meta{font-size:12px;color:#555;margin-top:4px}
+  /* notlar */
+  .notes-block{margin-top:16px;padding:0 20px 4px}
+  @media(max-width:560px){.notes-block{padding:0 14px 4px}}
+  .print-block{display:none}
+  .note-admin{background:var(--amber-wash);border:1px solid #f0d3bd;border-left:3px solid var(--amber);border-radius:8px;padding:11px 14px;font-size:13.5px;line-height:1.55;color:var(--ink-2);white-space:pre-wrap;margin-bottom:12px}
+  .note-cust label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:6px;letter-spacing:.02em}
+  .note-cust .nc-hint{font-weight:400;color:var(--muted);letter-spacing:0}
+  .note-cust textarea{width:100%;font-family:'Inter',sans-serif;font-size:13.5px;line-height:1.5;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);resize:vertical;min-height:52px}
+  .note-cust textarea:focus{outline:none;border-color:var(--teal);background:#fff;box-shadow:0 0 0 3px var(--teal-wash)}
 </style>
 </head>
 <body>
@@ -493,7 +507,7 @@
   <main>
     <div class="breadcrumb" id="crumb"><b>İmalat seçin</b></div>
 
-    <div class="card">
+    <div class="card measure-card">
       <div class="card-h">
         <span class="eyebrow">Ölçü Girişi</span>
         <h2 id="calcTitle">Metraj</h2>
@@ -565,6 +579,15 @@
           <tbody id="rows"></tbody>
           <tfoot id="foot"></tfoot>
         </table>
+      </div>
+
+      <div class="notes-block">
+        <div id="adminNote" class="note-admin" style="display:none"></div>
+        <div class="note-cust no-print">
+          <label for="custNote">Notunuz <span class="nc-hint">(WhatsApp ve PDF çıktısına eklenir)</span></label>
+          <textarea id="custNote" placeholder="Eklemek istediğiniz notu buraya yazın…" oninput="syncCustNotePrint()"></textarea>
+        </div>
+        <div id="custNotePrint" class="note-admin print-block"></div>
       </div>
 
       <div class="opts no-print">
@@ -2747,7 +2770,7 @@ function calculate(){
     tr.innerHTML=`
       <td class="name">${esc(mat.name)}${mat.note&&mat.note!=='—'?`<div class="sub">${esc(mat.note)}</div>`:''}</td>
       <td>${esc(mat.unit)}</td>
-      <td class="r mono" style="color:var(--muted);font-size:12.5px">${sarf}</td>
+      <td class="r mono" style="color:var(--muted);font-size:12.5px;white-space:nowrap">${sarf}</td>
       <td class="qty r">${qtyFmt(q,mat.unit)}</td>
       <td class="price r"><input class="price-edit num no-print" type="number" min="0" step="0.01" value="${up}" onchange="onPriceEdit(${i},this.value)"><span class="print-only" style="display:none">${money(up)}</span></td>
       <td class="total r">${money(line)}</td>`;
@@ -2763,15 +2786,24 @@ function calculate(){
     <div class="sm"><div class="k">Malzeme /m²</div><div class="v num">${money(materialTotal/A)}</div></div>
     <div class="sm"><div class="k">Toplam /m²</div><div class="v num">${money(grand/A)}</div></div>`;
   let f=`<tr><td colspan="5" class="lbl">Malzeme Toplamı</td><td class="val">${money(materialTotal)}</td></tr>`;
-  if(laborOn)f+=`<tr><td colspan="5" class="lbl">İşçilik (${money(laborRate)}/m² × ${nf.format(A)})</td><td class="val">${money(laborTotal)}</td></tr>`;
+  if(laborOn)f+=`<tr><td colspan="5" class="lbl">İşçilik (<input class="labor-edit no-print" type="number" min="0" step="1" value="${laborRate}" onchange="onLaborEdit(this.value)" title="İşçilik birim fiyatı ₺/m²"><span class="print-only">${nf.format(laborRate)}</span> ₺/m² × ${nf.format(A)} m²)</td><td class="val">${money(laborTotal)}</td></tr>`;
   if(kdvOn)f+=`<tr><td colspan="5" class="lbl">KDV %${DB.globals.kdv}</td><td class="val">${money(kdv)}</td></tr>`;
   f+=`<tr class="grand"><td colspan="5" class="lbl">Genel Toplam</td><td class="val">${money(grand)}</td></tr>`;
   document.getElementById('foot').innerHTML=f;
   document.getElementById('printTitle').textContent=c.name;
   document.getElementById('printMeta').textContent=`${current.path.join(' › ')} · Alan ${nf.format(A)} m² · Çevre ${nf.format(P)} m · ${new Date().toLocaleDateString('tr-TR')}`;
+  const an=document.getElementById('adminNote');
+  if(c.notes && c.notes.trim()){ an.textContent='Not: '+c.notes.trim(); an.style.display=''; } else { an.textContent=''; an.style.display='none'; }
+  syncCustNotePrint();
   document.getElementById('result').classList.add('show');
 }
+function syncCustNotePrint(){
+  const el=document.getElementById('custNote'); const p=document.getElementById('custNotePrint');
+  if(!el||!p)return; const v=(el.value||'').trim();
+  p.textContent = v ? ('Müşteri Notu: '+v) : '';
+}
 function onPriceEdit(i,val){ const c=calcById(current.id); if(!c)return; c.mats[i].price=parseFloat(val)||0; saveDB(); calculate(); }
+function onLaborEdit(val){ const c=calcById(current.id); if(!c)return; const v=parseFloat(val)||0; if(DB.globals.labor&&DB.globals.labor>0) DB.globals.labor=v; else c.labor=v; saveDB(); calculate(); }
 function shakeInputs(){ const box=document.querySelector('.measure'); box.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:220}); document.getElementById('en').focus(); }
 
 /* ============ WHATSAPP İLE FİYAT AL ============ */
@@ -2788,6 +2820,10 @@ function buildWhatsAppText(){
   const laborRate=(DB.globals.labor&&DB.globals.labor>0)?DB.globals.labor:c.labor;
   const laborTotal=laborOn?laborRate*A:0, subtotal=materialTotal+laborTotal, kdv=kdvOn?subtotal*(DB.globals.kdv/100):0, grand=subtotal+kdv;
   L.push(''); L.push('*Tahmini Toplam:* '+money(grand));
+  if(laborOn){ L.push(''); L.push('*İşçilik dahil istiyorum.*'); }
+  if(c.notes && c.notes.trim()){ L.push(''); L.push('*Not:* '+c.notes.trim()); }
+  const cn=document.getElementById('custNote'); const cnv=cn?(cn.value||'').trim():'';
+  if(cnv){ L.push(''); L.push('*Müşteri Notu:* '+cnv); }
   L.push(''); L.push('Bu iş için fiyat öğrenmek istiyorum.');
   return L.join('\n');
 }
@@ -3035,6 +3071,7 @@ function editCalc(id){
       <div class="ed-field"><label>İşçilik (₺/m²)</label><input type="number" id="cf-labor" value="${c.labor}" step="1"></div>
       <div class="ed-field"><label>Ölçü İpucu (opsiyonel)</label><input type="text" id="cf-hint" value="${esc(c.dimHint||'')}" placeholder="Örn: En = Uzunluk, Boy = Yükseklik"></div>
     </div>
+    <div class="ed-field"><label>Notlar (müşteriye görünür, müşteri değiştiremez)</label><textarea id="cf-notes" rows="2" placeholder="Bu imalatla ilgili müşteriye gösterilecek açıklama/uyarı (opsiyonel)">${esc(c.notes||'')}</textarea></div>
     <div class="ed-sec ed-sec-flex">Malzeme Analizi <button type="button" class="btn btn-out btn-mini" style="text-transform:none;letter-spacing:0;font-weight:600" onclick="openCopyPicker()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Başka İmalattan Kopyala</button></div>
     <div class="mat-head"><span>Malzeme</span><span>Not</span><span>Birim</span><span>Baz</span><span>Sarfiyat</span><span>Fiyat</span><span></span></div>
     <div id="matRows"></div>
@@ -3046,7 +3083,7 @@ function editCalc(id){
     if(!menu){ alert('Menü etiketi zorunlu.'); return null; }
     const p0=document.getElementById('cf-p0').value.trim(), p1=document.getElementById('cf-p1').value.trim();
     const mats=readMats(); if(!mats.length){ alert('En az bir malzeme ekleyin.'); return null; }
-    return { path:[p0,p1].filter(Boolean), menuLabel:menu, name:name||menu, labor:parseFloat(document.getElementById('cf-labor').value)||0, dimHint:document.getElementById('cf-hint').value.trim(), mats };
+    return { path:[p0,p1].filter(Boolean), menuLabel:menu, name:name||menu, labor:parseFloat(document.getElementById('cf-labor').value)||0, dimHint:document.getElementById('cf-hint').value.trim(), notes:document.getElementById('cf-notes').value.trim(), mats };
   };
   _del = isNew?null:()=>delCalc(id,true);
   _copy = isNew?null:()=>{
@@ -3099,6 +3136,7 @@ function pickCopySource(id){
   const src=calcById(id); if(!src)return;
   document.getElementById('cf-labor').value=src.labor;
   document.getElementById('cf-hint').value=src.dimHint||'';
+  document.getElementById('cf-notes').value=src.notes||'';
   const host=document.getElementById('matRows'); host.innerHTML='';
   src.mats.forEach(m=>addMatRow(clone(m)));
   if(!src.mats.length) addMatRow();
