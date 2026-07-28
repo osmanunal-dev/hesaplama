@@ -720,7 +720,7 @@
   <div id="adminReviews" class="admin-panel" style="display:none">
     <div class="bk-note">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-      <div>Müşteri değerlendirmeleri, statik site olduğu için <b>yorumu bırakan cihazda</b> saklanır (mail/telefon burada görünür). "Yayınla" ile bir yorumu herkese açık listeye alırsınız (iletişim bilgisi gizli kalır); tüm ziyaretçilerde görünmesi için <b>Dışa Aktar + deploy</b> gerekir. Tüm cihazlardan otomatik toplama için bir backend gerekir.</div>
+      <div>Müşteri değerlendirmeleri, statik site olduğu için <b>yorumu bırakan cihazda</b> saklanır. Mail/telefon yalnızca <b>bu yönetim panelinde</b> görünür; herkese açık "Mutlu Kullanıcılar" sayfasında sadece isim/puan/yorum çıkar. "Yayınla" sonrası iletişim bilgisi <b>korunur ve burada görünmeye devam eder</b>. Not: Yayınlanan yorumlar Dışa Aktar/deploy ile dosyaya işlendiğinden, iletişim bilgileri (sayfada gösterilmese de) dosya kaynağında yer alır.</div>
     </div>
     <div class="admin-bar"><span class="admin-count" id="rvCount"></span></div>
     <div id="adminRvList" class="admin-list"></div>
@@ -3532,13 +3532,13 @@ function buildAdminReviews(){
 }
 function adminRvRow(r,i,isLocal){
   const dt=r.date?new Date(r.date).toLocaleDateString('tr-TR'):'';
-  const contact = isLocal ? `<div class="ai-meta"><span class="pill">${esc(r.email||'-')}</span><span class="pill">${esc(r.phone||'-')}</span></div>` : '';
+  const contact = (r.email||r.phone) ? `<div class="ai-meta"><span class="pill">${esc(r.email||'-')}</span><span class="pill">${esc(r.phone||'-')}</span></div>` : '';
   const actions = isLocal
     ? `<button class="btn btn-out btn-mini" onclick="publishReview(${i})">Yayınla</button><button class="btn btn-danger btn-mini" onclick="delLocalReview(${i})">Sil</button>`
     : `<button class="btn btn-danger btn-mini" onclick="delPubReview(${i})">Sil</button>`;
   return `<div class="admin-item"><div class="ai-main"><div class="ai-title">${starHTML(r.rating)} ${esc(r.name||'Müşteri')} <span style="font-weight:400;color:var(--muted);font-size:12px">${dt}</span></div>${contact}${r.comment?`<div class="ai-meta">${esc(r.comment)}</div>`:''}</div><div class="ai-actions">${actions}</div></div>`;
 }
-function publishReview(i){ const r=LOCAL_REVIEWS[i]; if(!r)return; if(!Array.isArray(DB.reviews))DB.reviews=[]; DB.reviews.unshift({rating:r.rating,name:r.name,comment:r.comment,date:r.date}); saveDB(); LOCAL_REVIEWS.splice(i,1); saveReviews(); buildAdminReviews(); buildReviews(); alert('Yayınlandı. Tüm ziyaretçilere göstermek için Dışa Aktar + deploy edin.'); }
+function publishReview(i){ const r=LOCAL_REVIEWS[i]; if(!r)return; if(!Array.isArray(DB.reviews))DB.reviews=[]; DB.reviews.unshift({rating:r.rating,name:r.name,comment:r.comment,date:r.date,email:r.email||'',phone:r.phone||''}); saveDB(); LOCAL_REVIEWS.splice(i,1); saveReviews(); buildAdminReviews(); buildReviews(); alert('Yayınlandı. Tüm ziyaretçilere göstermek için Dışa Aktar + deploy edin.'); }
 function delLocalReview(i){ if(!confirm('Bu değerlendirmeyi silmek istiyor musunuz?'))return; LOCAL_REVIEWS.splice(i,1); saveReviews(); buildAdminReviews(); buildReviews(); }
 function delPubReview(i){ if(!confirm('Bu yayınlanan değerlendirmeyi silmek istiyor musunuz?'))return; DB.reviews.splice(i,1); saveDB(); buildAdminReviews(); buildReviews(); }
 
