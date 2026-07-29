@@ -3406,7 +3406,7 @@ function editAd(idx){
   document.getElementById('editorBody').innerHTML=`
     <div class="ed-field"><label>İsim / Firma</label><input type="text" id="adName" value="${esc(a.name||'')}" placeholder="Örn: Belek Mimarlık"></div>
     <div class="ed-field"><label>Açıklama</label><textarea id="adDesc" rows="2" placeholder="Firma hakkında kısa açıklama (opsiyonel)">${esc(a.desc||'')}</textarea></div>
-    <div class="ed-field"><label>Site Adresi (tıklanınca açılır)</label><input type="text" id="adLink" value="${esc(a.link||'')}" placeholder="Örn: belekmimarlik.com"></div>
+    <div class="ed-field"><label>Site Adresi (tıklanınca açılır)</label><input type="text" id="pfSite" value="${esc(a.link||'')}" placeholder="Örn: belekmimarlik.com"></div>
     <div class="ed-field"><label>Logo</label><div id="adPrev" class="ad-prev empty">Önizleme burada görünür</div></div>
     <div class="ed-row c2">
       <div class="ed-field"><label>Dosyadan Yükle</label><label class="btn btn-out ad-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Görsel Seç<input type="file" accept="image/*" style="display:none" onchange="readAdImage(this)"></label></div>
@@ -3419,7 +3419,7 @@ function editAd(idx){
   _save = ()=>{
     const url=document.getElementById('adImgUrl').value.trim(), data=document.getElementById('adImgData').value;
     const img=url||data;
-    const link=document.getElementById('adLink').value.trim();
+    const link=document.getElementById("pfSite").value.trim();
     const name=document.getElementById('adName').value.trim();
     const desc=document.getElementById('adDesc').value.trim();
     if(!img && !link && !name){ alert('En az bir isim, web adresi veya logo girin.'); return; }
